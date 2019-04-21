@@ -10,22 +10,13 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-/*
-    * simulates an operating system and the actions that run on it:
-        * inputs are a simAction linked list, configValues struct, and a logEvent linked list
-        * starts OS
-        * builds array of PCBs
-        * schedules next application to be run
-        * runs applications
-        * returns 0 when finished running
-*/
 int simulate(struct simAction *actionsList, struct configValues *settings, struct logEvent *logList)
 {
     int numApps, runningApp, timeSec, timeUsec, totalTime, cycleTime, memoryReturn;
     int memoryValues[3];
     char *type, *line;
     struct PCB *controlBlock;
-    struct MMU *mmu = calloc(1, sizeof(struct MMU *));
+    struct MMU *mmu = calloc(1, sizeof(struct MMU));
     struct simAction *programCounter;
     struct timeval startTime;
     struct timeval runtime;
@@ -33,8 +24,8 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
     bool logToMon = FALSE;
     bool logToFile = FALSE;
 
-    //identifying that this mmu link is the first mmu unit
-    mmu->id = FIRST;
+    //initializes MMU
+    initializeMMU(mmu);
 
     //allocating memory for line
     line = calloc(100, sizeof(char));
@@ -145,46 +136,57 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                 runtime.tv_sec = timeSec;
                 runtime.tv_usec = timeUsec;
 
+                //memory operation logic
                 if (programCounter->commandLetter == 'M')
                 {
 
+                    //puts SSBBBAAA values into memoryValues array (SS being 0, BBB being 1, AAA being 2)
                     stripMemoryValues(programCounter->assocVal, memoryValues);
 
+                    //memory allocation logic
                     if (strCmp(programCounter->operationString, "allocate"))
                     {
                         sprintf(line, "[%lf] Process: %d, MMU attempt to allocate %d/%d/%d\n", tv2double(execTime(startTime)), controlBlock->processNum, memoryValues[0], memoryValues[1], memoryValues[2]);
                         logIt(line, logList, logToMon, logToFile);
 
+                        //attempts to allocate memory
                         memoryReturn = allocate(mmu, memoryValues[0], memoryValues[1], memoryValues[2], settings->memoryAvailable, controlBlock);
 
+                        //error handling for memory allocation
                         if (memoryReturn)
                         {
                             if (memoryReturn == MEMORY_ALREADY_ALLOCATED_ERROR)
                             {
                                 sprintf(line, "[%lf] Process: %d, MMU failed to allocate. Memory already allocated. \n\n", tv2double(execTime(startTime)), controlBlock->processNum);
-                                logIt(line, logList, logToMon, logToFile);
-                                controlBlock->timeRemaining = 0;
                             }
                             else if (memoryReturn == CANNOT_ALLOCATE_MEMORY_AMOUNT_ERROR)
                             {
                                 sprintf(line, "[%lf] Process: %d, MMU failed to allocate. System memory full. \n\n", tv2double(execTime(startTime)), controlBlock->processNum);
-                                logIt(line, logList, logToMon, logToFile);
-                                controlBlock->timeRemaining = 0;
                             }
+                            else if (memoryReturn == DUPLICATE_MEMORY_ACCESS_ID_ERROR)
+                            {
+                                sprintf(line, "[%lf] Process: %d, MMU failed to allocate. Duplicate memory segment ID used. \n\n", tv2double(execTime(startTime)), controlBlock->processNum);
+                            }
+
+                            logIt(line, logList, logToMon, logToFile);
+                            controlBlock->timeRemaining = 0;
                         }
-                        else
+                        else //successful memory allocation
                         {
                             sprintf(line, "[%lf] Process: %d, MMU successful allocate %d/%d/%d\n", tv2double(execTime(startTime)), controlBlock->processNum, memoryValues[0], memoryValues[1], memoryValues[2]);
                             logIt(line, logList, logToMon, logToFile);
                         }
                     }
+                    //memory access logic
                     else if (strCmp(programCounter->operationString, "access"))
                     {
                         sprintf(line, "[%lf] Process: %d, MMU attempt to access %d/%d/%d\n", tv2double(execTime(startTime)), controlBlock->processNum, memoryValues[0], memoryValues[1], memoryValues[2]);
                         logIt(line, logList, logToMon, logToFile);
 
+                        //attempts to access memory
                         memoryReturn = access(mmu, controlBlock->processNum, memoryValues[0], memoryValues[1], memoryValues[2]);
 
+                        //memory access error handling
                         if (memoryReturn)
                         {
                             if (memoryReturn == MEMORY_ACCESS_OUTSIDE_BOUNDS_ERROR)
@@ -197,7 +199,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                             }
                             else if (memoryReturn == CANNOT_ACCESS_MEMORY_ERROR)
                             {
-                                sprintf(line, "[%lf] Process: %d, MMU failed to access. Base not allocated.\n\n", tv2double(execTime(startTime)), controlBlock->processNum);
+                                sprintf(line, "[%lf] Process: %d, MMU failed to access. Memory not allocated.\n\n", tv2double(execTime(startTime)), controlBlock->processNum);
                             }
                             else if (memoryReturn == PROCESS_DOES_NOT_OWN_MEMORY)
                             {
@@ -206,14 +208,14 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                             logIt(line, logList, logToMon, logToFile);
                             controlBlock->timeRemaining = 0;
                         }
-                        else
+                        else //successful memory access
                         {
                             sprintf(line, "[%lf] Process: %d, MMU successful access %d/%d/%d\n", tv2double(execTime(startTime)), controlBlock->processNum, memoryValues[0], memoryValues[1], memoryValues[2]);
                             logIt(line, logList, logToMon, logToFile);
                         }
                     }
                 }
-                else
+                else //handles everything except memory operations
                 {
                     sprintf(line, "[%lf] Process: %d, %s %s start\n", tv2double(execTime(startTime)), controlBlock->processNum, programCounter->operationString, type);
                     logIt(line, logList, logToMon, logToFile);
@@ -224,16 +226,17 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                     //subtracts from timeRemaining how much time the app was run for
                     controlBlock->timeRemaining -= ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS));
 
+                    //formatting output for logging
                     if (controlBlock->timeRemaining == 0)
                     {
                         sprintf(line, "[%lf] Process: %d, %s %s end\n\n", tv2double(execTime(startTime)), controlBlock->processNum, programCounter->operationString, type);
-                        logIt(line, logList, logToMon, logToFile);
                     }
                     else
                     {
                         sprintf(line, "[%lf] Process: %d, %s %s end\n", tv2double(execTime(startTime)), controlBlock->processNum, programCounter->operationString, type);
-                        logIt(line, logList, logToMon, logToFile);
                     }
+
+                    logIt(line, logList, logToMon, logToFile);
                 }
             }
 
@@ -248,6 +251,10 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
             //sets state to exit for control block
             controlBlock->state = "exit";
 
+            //deallocates memory associated with process from MMU
+            deallocate(mmu, controlBlock->processNum);
+
+            //shows segfault if memory error occurred
             if (memoryReturn)
             {
                 sprintf(line, "[%lf] OS: Process %d experiences segmentation fault.\n", tv2double(execTime(startTime)), controlBlock->processNum);
@@ -266,23 +273,28 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
         {
             programsToRun = FALSE;
         }
-        else
+        else //regular execution flow otherwise
         {
             sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
             logIt(line, logList, logToMon, logToFile);
+
             pcbList[runningApp]->state = "running";
+
             sprintf(line, "[%lf] OS: Process %d set in RUNNING state\n\n", tv2double(execTime(startTime)), runningApp);
             logIt(line, logList, logToMon, logToFile);
         }
     }
 
+    //logging output for simulator shutting down
     sprintf(line, "[%lf] OS: System end\n\n", tv2double(execTime(startTime)));
     logIt(line, logList, logToMon, logToFile);
 
     sprintf(line, "=========================\nEnd Simulation - Complete\n=========================\n");
     logIt(line, logList, logToMon, logToFile);
 
+    //freeing memory no longer needed
     freePCBs(pcbList, numApps);
+    free(mmu);
     free(line);
 
     return 0;

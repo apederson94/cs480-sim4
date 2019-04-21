@@ -7,17 +7,17 @@
 //holds all memory management information
 struct MMU
 {
-    int ownerPID;
-    int id;
-    int base;
-    int offset;
-    struct MMU *next;
+    int owner[1000];
+    int segmentID[1000];
+    int offset[1000];
+    int memoryUsed;
 };
 
 //denotes whether mmu is first or not
 enum
 {
-    FIRST = -10
+    FIRST = -10,
+    NOT_ALLOCATED = -20
 };
 
 //strips the values from the associated value for memory operations
@@ -34,5 +34,15 @@ int allocate(struct MMU *mmu, int id, int base, int offset, int maxOffset, struc
 
 //accesses memory from a process
 int access(struct MMU *mmu, int pid, int id, int base, int offset);
+
+/*
+    * initializes mmu
+        * sets array values to NOT_ALLOCATED
+        * sets memoryUsed to 0
+*/
+void initializeMMU(struct MMU *mmu);
+
+//deallocates memory from mmu
+void deallocate(struct MMU *mmu, int pid);
 
 #endif
