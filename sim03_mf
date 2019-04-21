@@ -1,0 +1,47 @@
+CC = gcc
+DEBUG = -g
+CFLAGS = -Wall -std=c99 -pedantic -c $(DEBUG) -pthread
+LFLAGS = -Wall -std=c99 -pedantic $(DEBUG) -pthread -o
+PROG_O_DEPS = main.o dataStructures.o errors.o fileUtils.o logger.o mathUtils.o memoryManagement.o scheduler.o simulator.o strUtils.o timer.o
+PROG_H_DEPS = booleans.h dataStructures.h errors.h fileUtils.h logger.h mathUtils.h memoryManagement.h scheduler.h simulator.h strUtils.h timer.h
+SIM_NAME = sim03
+
+sim0x: $(PROG_O_DEPS) $(PROG_H_DEPS)
+	$(CC) $(LFLAGS) $(SIM_NAME) $(PROG_O_DEPS)
+
+main.o: main.c booleans.h dataStructures.h errors.h fileUtils.h logger.h simulator.h strUtils.h timer.h
+	$(CC) $(CFLAGS) main.c
+
+dataStructures.o: dataStructures.c booleans.h dataStructures.h errors.h strUtils.h
+	$(CC) $(CFLAGS) dataStructures.c
+
+errors.o: errors.c errors.h
+	$(CC) $(CFLAGS) errors.c
+
+fileUtils.o: fileUtils.c booleans.h dataStructures.h errors.h fileUtils.h strUtils.h 
+	$(CC) $(CFLAGS) fileUtils.c
+
+logger.o: logger.c dataStructures.h errors.h logger.h strUtils.h
+	$(CC) $(CFLAGS) logger.c
+
+mathUtils.o: mathUtils.c mathUtils.h
+	$(CC) $(CFLAGS) mathUtils.c
+
+memoryManagement.o: memoryManagement.c booleans.h dataStructures.h memoryManagement.h timer.h
+	$(CC) $(CFLAGS) memoryManagement.c
+
+scheduler.o: scheduler.c scheduler.h strUtils.h
+	$(CC) $(CFLAGS) scheduler.c
+
+simulator.o: simulator.c dataStructures.h scheduler.h simulator.h 
+	$(CC) $(CFLAGS) simulator.c
+
+strUtils.o: strUtils.c booleans.h errors.h mathUtils.h strUtils.h
+	$(CC) $(CFLAGS) strUtils.c
+
+timer.o: timer.c timer.h
+	$(CC) $(CFLAGS) timer.c
+
+
+clean:
+	\rm *.o $(SIM_NAME)
