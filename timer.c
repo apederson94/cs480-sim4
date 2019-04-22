@@ -44,9 +44,9 @@ void runFor(void *arguments)
 {
     pthread_t threadId; 
     struct runForArgs *args = (struct runForArgs*) arguments;
-    int pid = args->controlBlock->processNum;
-    double *interrupt = args->interrupts[pid];
+    int pid = args->pid;
     struct timeval runtime = args->runtime;
+    struct timeval currTime;
     char cmdLtr = args->cmdLtr;
 
     //pass in time to run for, and clock start time for program
@@ -54,15 +54,19 @@ void runFor(void *arguments)
 
     //TODO: this may be getting subtracted twice when I run through again on I/O ops. I'll need to double check...
 
+    //TODO: Process 3 is chosen way too frequently. What's up with that??
+
     //wait for thread to return
     pthread_join(threadId, NULL);
 
     if (cmdLtr == 'I' || cmdLtr == 'O')
     {
         //TODO: CHECK THE DOUBLE SELECTED PROCESS LOG OUTPUT
-        gettimeofday(&runtime, NULL);
-        *(interrupt) = tv2double(runtime);
-        args->controlBlock->state = READY_STATE;
+        //TODO: THESE VALUES AREN'T TRANSLATING TO THE OUTSIDE WORLD. THAT'S WHERE THE DISCONNECT IS HAPPENING, I THINK
+        gettimeofday(&currTime, NULL);
+        *(args->interrupts[pid]) = tv2double(currTime);
+        printf("PID: %d\n", pid);
+        args->pcbList[pid]->state = READY_STATE;
     }
 }
 

@@ -242,9 +242,10 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                     
 
                         args.cmdLtr = controlBlock->pc->commandLetter;
-                        args.controlBlock = controlBlock;
+                        args.pcbList = pcbList;
                         args.runtime = runtime;
                         args.interrupts = interrupts;
+                        args.pid = controlBlock->processNum;
 
                         //runs app for amount of time stored in runtime struct
                         printf("SUBTRACTED %d ms FROM PROCESS %d FOR %s\n", ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS)), controlBlock->processNum, controlBlock->pc->operationString);
@@ -346,6 +347,8 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                 }
             }
         }
+
+        //TODO: PROBABLY HANGS BECAUSE THERE ISN'T ANYTHING CURRENTLY READY BUT IDK YET. NEED TO DO MORE TESTING
 
         //if timeRemaining is zero logic
         if (controlBlock->timeRemaining == 0)

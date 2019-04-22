@@ -78,6 +78,8 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
         for (pcbIter = 0; pcbIter < numProcesses; pcbIter++)
         {
 
+            printf("%d STATE: %d\n", pcbIter, pcbList[pcbIter]->state);
+
             //if time remaining isn't 0, select the first process in the array
             if (pcbList[pcbIter]->timeRemaining != 0 
             && (pcbList[pcbIter]-> state == READY_STATE || pcbList[pcbIter]-> state == RUNNING_STATE))

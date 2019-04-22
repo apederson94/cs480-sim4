@@ -8,9 +8,10 @@
 struct runForArgs
 {
     struct timeval runtime;
-    struct PCB *controlBlock;
+    struct PCB **pcbList;
     double **interrupts;
     char cmdLtr;
+    int pid;
 };
 
 //returns time of execution local to program
