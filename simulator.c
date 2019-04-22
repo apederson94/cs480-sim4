@@ -102,6 +102,9 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
     sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
     logIt(line, logList, logToMon, logToFile);
 
+    sprintf(line, "[%lf] OS: Process %d set in RUNNING state\n\n", tv2double(execTime(startTime)), runningApp);
+    logIt(line, logList, logToMon, logToFile);
+
     while (programsToRun)
     {
 
@@ -267,7 +270,6 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                     }
                     
                     //formatting output for logging
-                    printf("CONTROL BLOCK STATE: %d\n", controlBlock->state);
                     if (controlBlock->state != WAITING_STATE)
                     {
                         if (controlBlock->timeRemaining == 0)
@@ -296,27 +298,35 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
 
             if (runningApp == NO_APPS_READY)
             {
-                sprintf(line, "[%lf] OS: Idling while waiting for an application to be ready.\n", tv2double(execTime(startTime)));
+                sprintf(line, "\n[%lf] OS: System/CPU idle.\n\n", tv2double(execTime(startTime)));
                 logIt(line, logList, logToMon, logToFile);
                 while(runningApp == NO_APPS_READY)
                 {
-                    runningApp =scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
+                    runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
                 }
+
+                sprintf(line, "[%lf] OS: Interrupt called by process %d\n", tv2double(execTime(startTime)), runningApp);
+                logIt(line, logList, logToMon, logToFile);
+
+                sprintf(line, "[%lf] OS: Process %d set in RUNNING state\n", tv2double(execTime(startTime)), runningApp);
+                logIt(line, logList, logToMon, logToFile);
+
+                sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
+                logIt(line, logList, logToMon, logToFile);
                 //TODO: CHECK FOR ALL APPS DONE JUST IN CASE98
                 
             }
 
-            printf("RUNNING APP: %d\n", runningApp);
-
             pcbList[runningApp]->state = RUNNING_STATE;
 
-            //sets current PCB and current program counter
-            controlBlock = pcbList[runningApp];
 
             if (runningApp != controlBlock->processNum)
             {
-                sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
+                sprintf(line, "\n[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
                 logIt(line, logList, logToMon, logToFile);
+
+                //sets current PCB and current program counter
+                controlBlock = pcbList[runningApp];
             }
             
             
@@ -356,7 +366,6 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
             sprintf(line, "[%lf] 1OS: Selected process %d with %dms remaining\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
             logIt(line, logList, logToMon, logToFile);
 
-            printf("RUNNING APP: %d\n", runningApp);
             pcbList[runningApp]->state = RUNNING_STATE;
         }
     }

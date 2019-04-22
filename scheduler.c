@@ -82,7 +82,6 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
             if (pcbList[pcbIter]->timeRemaining != 0 
             && (pcbList[pcbIter]-> state == READY_STATE || pcbList[pcbIter]-> state == RUNNING_STATE))
             { 
-                printf("STATE: %d\n", pcbList[pcbIter]->state);
                 nextJob = pcbList[pcbIter]->processNum;
                 return nextJob;
             }
