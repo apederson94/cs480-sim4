@@ -1,6 +1,8 @@
 #include "dataStructures.h"
 #include "strUtils.h"
 #include "errors.h"
+#include "scheduler.h"
+#include "interrupts.h"
 #include <stdio.h>
 
 /*
@@ -8,9 +10,11 @@
         * FCFS-N
         * SJF-N
 */
-int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses)
+int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double *interrupts[])
 {
-    int pcbIter, shortestJob;
+    int pcbIter, nextJob, interrupt;
+
+    nextJob = NO_APPS_READY;
 
     //logic for dealing with "FCFS-N" scheduling type
     if (strCmp(scheduler, "FCFS-N"))
@@ -21,9 +25,11 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses)
         {
 
             //if time remaining isn't 0, select the first process in the array
-            if (pcbList[pcbIter]->timeRemaining != 0)
-            {
-                return pcbList[pcbIter]->processNum;
+            if (pcbList[pcbIter]->timeRemaining != 0 
+            && (pcbList[pcbIter]-> state == READY_STATE || pcbList[pcbIter]-> state == RUNNING_STATE))
+            { 
+                nextJob = pcbList[pcbIter]->processNum;
+                return nextJob;
             }
         }
 
@@ -32,10 +38,8 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses)
     }
 
     //logic for dealing with "SJF-N" scheduling type
-    if (strCmp(scheduler, "SJF-N"))
+    else if (strCmp(scheduler, "SJF-N"))
     {
-
-        shortestJob = ALL_PROGRAMS_DONE;
 
         //iterates PCB array
         for (pcbIter = 0; pcbIter < numProcesses; pcbIter++)
@@ -44,18 +48,47 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses)
             //if time remaining isn't 0, select the shortest job
             if (pcbList[pcbIter]->timeRemaining != 0)
             {
-                if (shortestJob == ALL_PROGRAMS_DONE)
+                if (nextJob == NO_APPS_READY
+                && (pcbList[pcbIter]->state == READY_STATE || pcbList[pcbIter]->state == RUNNING_STATE))
                 {
-                    shortestJob = pcbIter;
+                    nextJob = pcbIter;
                 }
-                else if (pcbList[shortestJob]->timeRemaining > pcbList[pcbIter]->timeRemaining)
+                else if (nextJob != NO_APPS_READY && (pcbList[nextJob]->timeRemaining > pcbList[pcbIter]->timeRemaining))
                 {
-                    shortestJob = pcbIter;
+                    nextJob = pcbIter;
                 }
             }
         }
 
-        return shortestJob;
+        return nextJob;
+    }
+
+    //logic for dealing with "SJF-P" scheduling type
+    else if (strCmp(scheduler, "FCFS-P"))
+    {
+
+        interrupt = checkForInterrupt(interrupts, numProcesses);
+
+        if (interrupt >= 0)
+        {
+            return interrupt;
+        }
+
+        //iterates PCB array
+        for (pcbIter = 0; pcbIter < numProcesses; pcbIter++)
+        {
+
+            //if time remaining isn't 0, select the first process in the array
+            if (pcbList[pcbIter]->timeRemaining != 0 
+            && (pcbList[pcbIter]-> state == READY_STATE || pcbList[pcbIter]-> state == RUNNING_STATE))
+            { 
+                printf("STATE: %d\n", pcbList[pcbIter]->state);
+                nextJob = pcbList[pcbIter]->processNum;
+                return nextJob;
+            }
+        }
+        
+        return nextJob;
     }
 
     return SCHEDULER_NOT_AVAILABLE;

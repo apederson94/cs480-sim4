@@ -330,7 +330,6 @@ int verifySimActions(struct simAction *head)
 void createPCBList(struct PCB **pcbList, struct simAction *head, struct configValues *settings)
 {
     struct simAction *actionIter;
-    char *new = "new";
     int processNum = 0;
     struct PCB *controlBlock;
     bool isCalculating = FALSE; //flag to tell function that calculation of time is taking place for time remaining
@@ -346,7 +345,7 @@ void createPCBList(struct PCB **pcbList, struct simAction *head, struct configVa
             controlBlock = (struct PCB *)calloc(1, sizeof(struct PCB));
             //sets process number, state to new, and program counter
             controlBlock->processNum = processNum;
-            controlBlock->state = new;
+            controlBlock->state = NEW_STATE;
             controlBlock->memoryUsed = 0;
             controlBlock->pc = actionIter;
 
@@ -400,7 +399,7 @@ void setStatesReady(struct PCB **pcbList, int numProcesses)
     for (processNum = 0; processNum < numProcesses; processNum++)
     {
         controlBlock = pcbList[processNum];
-        controlBlock->state = "ready";
+        controlBlock->state = READY_STATE;
     }
 }
 

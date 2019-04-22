@@ -36,8 +36,17 @@ struct PCB
     int processNum;
     int timeRemaining;
     int memoryUsed;
-    char *state;
+    int state;
     struct simAction *pc;
+};
+
+enum
+{
+    NEW_STATE,
+    READY_STATE,
+    RUNNING_STATE,
+    WAITING_STATE,
+    EXIT_STATE
 };
 
 //creates a list of pcbs

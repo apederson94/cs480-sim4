@@ -1,4 +1,5 @@
 #include "timer.h"
+#include "dataStructures.h"
 #include <stdlib.h>
 #include <pthread.h>
 #include <sys/time.h>
@@ -39,15 +40,29 @@ struct timeval execTime(struct timeval start)
 /*
     creates a pthread that runs a timer for timeval amount of time
 */
-void runFor(struct timeval time)
+void runFor(void *arguments)
 {
-    pthread_t threadId;
+    pthread_t threadId; 
+    struct runForArgs *args = (struct runForArgs*) arguments;
+    struct timeval runtime = args->runtime;
+    char cmdLtr = args->cmdLtr;
 
     //pass in time to run for, and clock start time for program
-    pthread_create(&threadId, NULL, threadTimer, &time);
+    pthread_create(&threadId, NULL, threadTimer, &runtime);
+
+    //subtracts from timeRemaining how much time the app was run for
+    args->controlBlock->timeRemaining -= ((runtime.tv_sec * MS_PER_SEC) + (runtime.tv_usec / USEC_PER_MS));
 
     //wait for thread to return
     pthread_join(threadId, NULL);
+
+    if (cmdLtr == 'I' || cmdLtr == 'O')
+    {
+        gettimeofday(&runtime, NULL);
+        printf("@@@@@@@@@@@@@@@@@@@@   %d, %lf, %ld, %ld   @@@@@@@@@@@@@@@@@@@@@\n", args->controlBlock->processNum, *(args->interrupt), runtime.tv_sec, runtime.tv_usec);
+        *(args->interrupt) = tv2double(runtime);
+        args->controlBlock->state = READY_STATE;
+    }
 }
 
 /*
