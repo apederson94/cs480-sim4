@@ -44,23 +44,24 @@ void runFor(void *arguments)
 {
     pthread_t threadId; 
     struct runForArgs *args = (struct runForArgs*) arguments;
+    int pid = args->controlBlock->processNum;
+    double *interrupt = args->interrupts[pid];
     struct timeval runtime = args->runtime;
     char cmdLtr = args->cmdLtr;
 
     //pass in time to run for, and clock start time for program
     pthread_create(&threadId, NULL, threadTimer, &runtime);
 
-    //subtracts from timeRemaining how much time the app was run for
-    args->controlBlock->timeRemaining -= ((runtime.tv_sec * MS_PER_SEC) + (runtime.tv_usec / USEC_PER_MS));
+    //TODO: this may be getting subtracted twice when I run through again on I/O ops. I'll need to double check...
 
     //wait for thread to return
     pthread_join(threadId, NULL);
 
     if (cmdLtr == 'I' || cmdLtr == 'O')
     {
+        //TODO: CHECK THE DOUBLE SELECTED PROCESS LOG OUTPUT
         gettimeofday(&runtime, NULL);
-        printf("@@@@@@@@@@@@@@@@@@@@   %d, %lf, %ld, %ld   @@@@@@@@@@@@@@@@@@@@@\n", args->controlBlock->processNum, *(args->interrupt), runtime.tv_sec, runtime.tv_usec);
-        *(args->interrupt) = tv2double(runtime);
+        *(interrupt) = tv2double(runtime);
         args->controlBlock->state = READY_STATE;
     }
 }

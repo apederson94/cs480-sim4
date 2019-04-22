@@ -244,9 +244,10 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                         args.cmdLtr = controlBlock->pc->commandLetter;
                         args.controlBlock = controlBlock;
                         args.runtime = runtime;
-                        args.interrupt = interrupts[controlBlock->processNum];
+                        args.interrupts = interrupts;
 
                         //runs app for amount of time stored in runtime struct
+                        printf("SUBTRACTED %d ms FROM PROCESS %d FOR %s\n", ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS)), controlBlock->processNum, controlBlock->pc->operationString);
                         pthread_create(&threadIds[controlBlock->processNum], NULL, runFor, &args);
                     
                     }
@@ -268,21 +269,35 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                     {
                         pthread_join(threadIds[controlBlock->processNum], NULL);
                     }
+
+                    //TODO: FIND WHERE TO ITERATE FOR EXITING A PROGRAM WHEN THEY INTERRUPT ALL WEIRD AND MAKE TIME REMAINING BE ZERO BEFORE THEY'RE READY TO EXIT
                     
                     //formatting output for logging
                     if (controlBlock->state != WAITING_STATE)
                     {
+                        controlBlock->timeRemaining -= ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS));
+
                         if (controlBlock->timeRemaining == 0)
                         {
                             sprintf(line, "[%lf] Process: %d, %s %s end\n\n", tv2double(execTime(startTime)), controlBlock->processNum, controlBlock->pc->operationString, type);
+                            if (*(interrupts[controlBlock->processNum]) != 0.0)
+                            {
+                                controlBlock->pc = controlBlock->pc->next;
+                            }
                         }
                         else
                         {
                             sprintf(line, "[%lf] Process: %d, %s %s end\n", tv2double(execTime(startTime)), controlBlock->processNum, controlBlock->pc->operationString, type);
                         }
 
-                        logIt(line, logList, logToMon, logToFile);
+                        if (*(interrupts[controlBlock->processNum]) != 0.0)
+                        {
+                            *(interrupts[controlBlock->processNum]) = 0.0;
                         }
+
+                        logIt(line, logList, logToMon, logToFile);
+                    }
+                    printf("%s\n", controlBlock->pc->operationString);
                 }
             }
 
@@ -293,43 +308,43 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
             
 
             //selects next running application
-            
-            runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
-
-            if (runningApp == NO_APPS_READY)
+            if (controlBlock->timeRemaining != 0)
             {
-                sprintf(line, "\n[%lf] OS: System/CPU idle.\n\n", tv2double(execTime(startTime)));
-                logIt(line, logList, logToMon, logToFile);
-                while(runningApp == NO_APPS_READY)
+                runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
+
+                if (runningApp == NO_APPS_READY)
                 {
-                    runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
+                    sprintf(line, "\n[%lf] OS: System/CPU idle.\n\n", tv2double(execTime(startTime)));
+                    logIt(line, logList, logToMon, logToFile);
+                    while(runningApp == NO_APPS_READY)
+                    {
+                        runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
+                    }
+
+                    sprintf(line, "[%lf] OS: Interrupt called by process %d\n", tv2double(execTime(startTime)), runningApp);
+                    logIt(line, logList, logToMon, logToFile);
+
+                    sprintf(line, "[%lf] OS: Process %d set in RUNNING state\n", tv2double(execTime(startTime)), runningApp);
+                    logIt(line, logList, logToMon, logToFile);
+
+                    sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
+                    logIt(line, logList, logToMon, logToFile);
+                    //TODO: CHECK FOR ALL APPS DONE JUST IN CASE98
+                    
                 }
 
-                sprintf(line, "[%lf] OS: Interrupt called by process %d\n", tv2double(execTime(startTime)), runningApp);
-                logIt(line, logList, logToMon, logToFile);
+                pcbList[runningApp]->state = RUNNING_STATE;
 
-                sprintf(line, "[%lf] OS: Process %d set in RUNNING state\n", tv2double(execTime(startTime)), runningApp);
-                logIt(line, logList, logToMon, logToFile);
 
-                sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
-                logIt(line, logList, logToMon, logToFile);
-                //TODO: CHECK FOR ALL APPS DONE JUST IN CASE98
-                
+                if (runningApp != controlBlock->processNum)
+                {
+                    sprintf(line, "\n[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
+                    logIt(line, logList, logToMon, logToFile);
+
+                    //sets current PCB and current program counter
+                    controlBlock = pcbList[runningApp];
+                }
             }
-
-            pcbList[runningApp]->state = RUNNING_STATE;
-
-
-            if (runningApp != controlBlock->processNum)
-            {
-                sprintf(line, "\n[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
-                logIt(line, logList, logToMon, logToFile);
-
-                //sets current PCB and current program counter
-                controlBlock = pcbList[runningApp];
-            }
-            
-            
         }
 
         //if timeRemaining is zero logic
@@ -351,6 +366,8 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
 
             sprintf(line, "[%lf] OS: Process %d ended and set in \"exit\" state\n", tv2double(execTime(startTime)), controlBlock->processNum);
             logIt(line, logList, logToMon, logToFile);
+
+            *(interrupts[controlBlock->processNum]) = 0.0;
         }
 
         //schedules the next app to be run
@@ -361,9 +378,29 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
         {
             programsToRun = FALSE;
         }
-        else //regular execution flow otherwise
+        else if (runningApp == NO_APPS_READY)
         {
-            sprintf(line, "[%lf] 1OS: Selected process %d with %dms remaining\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
+            sprintf(line, "\n[%lf] OS: System/CPU idle.\n\n", tv2double(execTime(startTime)));
+            logIt(line, logList, logToMon, logToFile);
+            while(runningApp == NO_APPS_READY)
+            {
+                runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
+            }
+
+            sprintf(line, "[%lf] OS: Interrupt called by process %d\n", tv2double(execTime(startTime)), runningApp);
+            logIt(line, logList, logToMon, logToFile);
+
+            sprintf(line, "[%lf] OS: Process %d set in RUNNING state\n", tv2double(execTime(startTime)), runningApp);
+            logIt(line, logList, logToMon, logToFile);
+
+            sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
+            logIt(line, logList, logToMon, logToFile);
+            //TODO: CHECK FOR ALL APPS DONE JUST IN CASE98
+            
+        }
+        else if (controlBlock->timeRemaining > 0) //regular execution flow otherwise
+        {
+            sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
             logIt(line, logList, logToMon, logToFile);
 
             pcbList[runningApp]->state = RUNNING_STATE;

@@ -9,7 +9,7 @@ struct runForArgs
 {
     struct timeval runtime;
     struct PCB *controlBlock;
-    double *interrupt;
+    double **interrupts;
     char cmdLtr;
 };
 

@@ -14,10 +14,16 @@ int checkForInterrupt(double *interrupts[], int numApps)
     for (intIter = 0; intIter < numApps; intIter++)
     {
         currTime = interrupts[intIter];
-        
+
+        if(*(currTime) > 0.0)
+        {
+            printf("%d CURRENT TIME: %lf\n", intIter, *(currTime));
+        }
+
         if (*(currTime) != 0.0 && *(currTime) <= soonestTime)
         {
             soonest = intIter;
+            soonestTime = *(currTime);
         }
     }
 

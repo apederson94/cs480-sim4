@@ -1,0 +1,370 @@
+===================
+SIMULATOR PROGRAM
+===================
+
+Begin config3.cnf upload...
+
+Verifying system settings...
+
+System settings verified!
+
+config3.cnf uploaded successfully!
+
+Version                : 1.050000
+Program file name      : metadata3.mdf
+CPU schedule selection : FCFS-P
+Quantum time           : 35
+Memory Available       : 40000
+Process cycle rate     : 8
+I/O cycle rate         : 24
+Log to selection       : Monitor
+Log file name          : N/A
+
+Begin metadata3.mdf file upload...
+
+metadata3.mdf uploaded succesfully!
+
+Op code letter: S
+Op code name  : start
+Op code value : 0
+
+Op code letter: A
+Op code name  : start
+Op code value : 0
+
+Op code letter: I
+Op code name  : keyboard
+Op code value : 150
+
+Op code letter: P
+Op code name  : run
+Op code value : 8
+
+Op code letter: P
+Op code name  : run
+Op code value : 14
+
+Op code letter: O
+Op code name  : printer
+Op code value : 65
+
+Op code letter: P
+Op code name  : run
+Op code value : 8
+
+Op code letter: I
+Op code name  : keyboard
+Op code value : 110
+
+Op code letter: P
+Op code name  : run
+Op code value : 11
+
+Op code letter: O
+Op code name  : printer
+Op code value : 35
+
+Op code letter: O
+Op code name  : hard drive
+Op code value : 39
+
+Op code letter: A
+Op code name  : end
+Op code value : 0
+
+Op code letter: A
+Op code name  : start
+Op code value : 0
+
+Op code letter: I
+Op code name  : hard drive
+Op code value : 24
+
+Op code letter: P
+Op code name  : run
+Op code value : 14
+
+Op code letter: P
+Op code name  : run
+Op code value : 15
+
+Op code letter: O
+Op code name  : monitor
+Op code value : 10
+
+Op code letter: P
+Op code name  : run
+Op code value : 14
+
+Op code letter: P
+Op code name  : run
+Op code value : 7
+
+Op code letter: P
+Op code name  : run
+Op code value : 13
+
+Op code letter: P
+Op code name  : run
+Op code value : 5
+
+Op code letter: I
+Op code name  : keyboard
+Op code value : 150
+
+Op code letter: A
+Op code name  : end
+Op code value : 0
+
+Op code letter: A
+Op code name  : start
+Op code value : 0
+
+Op code letter: O
+Op code name  : monitor
+Op code value : 26
+
+Op code letter: P
+Op code name  : run
+Op code value : 14
+
+Op code letter: P
+Op code name  : run
+Op code value : 9
+
+Op code letter: I
+Op code name  : keyboard
+Op code value : 120
+
+Op code letter: O
+Op code name  : hard drive
+Op code value : 39
+
+Op code letter: P
+Op code name  : run
+Op code value : 14
+
+Op code letter: P
+Op code name  : run
+Op code value : 6
+
+Op code letter: P
+Op code name  : run
+Op code value : 10
+
+Op code letter: O
+Op code name  : printer
+Op code value : 75
+
+Op code letter: A
+Op code name  : end
+Op code value : 0
+
+Op code letter: A
+Op code name  : start
+Op code value : 0
+
+Op code letter: P
+Op code name  : run
+Op code value : 12
+
+Op code letter: O
+Op code name  : printer
+Op code value : 60
+
+Op code letter: O
+Op code name  : hard drive
+Op code value : 36
+
+Op code letter: I
+Op code name  : hard drive
+Op code value : 39
+
+Op code letter: P
+Op code name  : run
+Op code value : 13
+
+Op code letter: P
+Op code name  : run
+Op code value : 15
+
+Op code letter: I
+Op code name  : hard drive
+Op code value : 39
+
+Op code letter: O
+Op code name  : hard drive
+Op code value : 39
+
+Op code letter: O
+Op code name  : hard drive
+Op code value : 15
+
+Op code letter: A
+Op code name  : end
+Op code value : 0
+
+Op code letter: S
+Op code name  : end
+Op code value : 0
+
+Verifying simulator actions...
+
+Sim actions verified!
+
+===============
+Simulator Start
+===============
+
+[0.000000] OS: System Start
+[0.004298] OS: Creating Process Control Blocks
+[0.014339] OS: All processes initialized in "new" state
+[0.015775] OS: All processes now set to state "ready"
+[0.018879] OS: Selected process 0 with 9904ms remaining
+
+[0.019768] OS: Process 0 set in RUNNING state
+
+[0.022983] Process: 0, keyboard input start
+SUBTRACTED 3600 ms FROM PROCESS 0 FOR keyboard
+keyboard
+
+[0.032662] OS: Selected process 1 with 4960ms remaining
+
+[0.033817] Process: 1, hard drive input start
+SUBTRACTED 576 ms FROM PROCESS 1 FOR hard drive
+hard drive
+
+[0.037654] OS: Selected process 2 with 6664ms remaining
+
+[0.038356] Process: 2, monitor output start
+SUBTRACTED 624 ms FROM PROCESS 2 FOR monitor
+[0.858191] Process: 2, monitor output end
+monitor
+[0.859996] Process: 2, run operation start
+SUBTRACTED 112 ms FROM PROCESS 2 FOR run
+[1.088891] Process: 2, run operation end
+run
+1 CURRENT TIME: 1555918380.521436
+
+[1.094945] OS: Selected process 1 with 4960ms remaining
+
+[1.096853] Process: 1, hard drive input end
+hard drive
+[1.097234] Process: 1, run operation start
+SUBTRACTED 112 ms FROM PROCESS 1 FOR run
+[1.209813] Process: 1, run operation end
+run
+[1.209885] Process: 1, run operation start
+SUBTRACTED 120 ms FROM PROCESS 1 FOR run
+[1.330169] Process: 1, run operation end
+run
+[1.330236] Process: 1, monitor output start
+SUBTRACTED 240 ms FROM PROCESS 1 FOR monitor
+monitor
+
+[1.330340] OS: Selected process 2 with 5928ms remaining
+
+[1.330378] Process: 2, run operation start
+SUBTRACTED 72 ms FROM PROCESS 2 FOR run
+[1.474773] Process: 2, run operation end
+run
+[1.474846] Process: 2, keyboard input start
+SUBTRACTED 2880 ms FROM PROCESS 2 FOR keyboard
+keyboard
+
+[1.474952] OS: Selected process 3 with 5792ms remaining
+
+[1.474996] Process: 3, run operation start
+SUBTRACTED 96 ms FROM PROCESS 3 FOR run
+[1.667360] Process: 3, run operation end
+run
+[1.667415] Process: 3, printer output start
+SUBTRACTED 1440 ms FROM PROCESS 3 FOR printer
+printer
+
+[1.667810] OS: System/CPU idle.
+
+3 CURRENT TIME: 1555918390.071446
+[10.476864] OS: Interrupt called by process 3
+[10.477958] OS: Process 3 set in RUNNING state
+[10.478793] OS: Selected process 3 with 5696ms remaining
+
+[10.479413] Process: 3, printer output end
+printer
+[10.479469] Process: 3, hard drive output start
+SUBTRACTED 864 ms FROM PROCESS 3 FOR hard drive
+hard drive
+
+[10.479582] OS: System/CPU idle.
+
+3 CURRENT TIME: 1555918391.437797
+[11.842968] OS: Interrupt called by process 3
+[11.843012] OS: Process 3 set in RUNNING state
+[11.843052] OS: Selected process 3 with 4256ms remaining
+
+[11.843096] Process: 3, hard drive output end
+hard drive
+[11.843148] Process: 3, hard drive input start
+SUBTRACTED 936 ms FROM PROCESS 3 FOR hard drive
+hard drive
+
+[11.843268] OS: System/CPU idle.
+
+3 CURRENT TIME: 1555918393.641309
+[14.046495] OS: Interrupt called by process 3
+[14.046543] OS: Process 3 set in RUNNING state
+[14.046583] OS: Selected process 3 with 3392ms remaining
+
+[14.046629] Process: 3, hard drive input end
+hard drive
+[14.046682] Process: 3, run operation start
+SUBTRACTED 104 ms FROM PROCESS 3 FOR run
+[14.151098] Process: 3, run operation end
+run
+[14.151188] Process: 3, run operation start
+SUBTRACTED 120 ms FROM PROCESS 3 FOR run
+[14.271503] Process: 3, run operation end
+run
+[14.271598] Process: 3, hard drive input start
+SUBTRACTED 936 ms FROM PROCESS 3 FOR hard drive
+hard drive
+
+[14.271720] OS: System/CPU idle.
+
+3 CURRENT TIME: 1555918394.913726
+[15.318924] OS: Interrupt called by process 3
+[15.318968] OS: Process 3 set in RUNNING state
+[15.319007] OS: Selected process 3 with 2232ms remaining
+
+[15.319051] Process: 3, hard drive input end
+hard drive
+[15.319103] Process: 3, hard drive output start
+SUBTRACTED 936 ms FROM PROCESS 3 FOR hard drive
+hard drive
+
+[15.319216] OS: System/CPU idle.
+
+3 CURRENT TIME: 1555918395.976860
+[16.382044] OS: Interrupt called by process 3
+[16.382089] OS: Process 3 set in RUNNING state
+[16.382127] OS: Selected process 3 with 1296ms remaining
+
+[16.382171] Process: 3, hard drive output end
+hard drive
+[16.382223] Process: 3, hard drive output start
+SUBTRACTED 360 ms FROM PROCESS 3 FOR hard drive
+hard drive
+
+[16.382338] OS: System/CPU idle.
+
+[16.831706] OS: Interrupt called by process 3
+[16.831775] OS: Process 3 set in RUNNING state
+[16.831814] OS: Selected process 3 with 360ms remaining
+
+[16.832156] Process: 3, hard drive output end
+
+hard drive
+[16.833671] OS: Process 3 ended and set in "exit" state
+
+[16.834901] OS: System/CPU idle.
+
