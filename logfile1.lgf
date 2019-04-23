@@ -1,0 +1,26 @@
+==================================================
+Simulator Log File Header
+==================================================
+
+Version                : 1.050000
+Program file name      : metadata0.mdf
+CPU schedule selection : SRTF-P
+Quantum time           : 55
+Memory Available       : 10000
+Process cycle rate     : 10
+I/O cycle rate         : 20
+Log to selection       : Both
+Log file name          : logfile1.lgf
+
+==================================================
+==================================================
+
+===============
+Simulator Start
+===============
+
+[0.000000] OS: System Start
+[0.000021] OS: Creating Process Control Blocks
+[0.000043] OS: All processes initialized in "new" state
+[0.000063] OS: All processes now set to state "ready"
+
