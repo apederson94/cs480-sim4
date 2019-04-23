@@ -1,7 +1,10 @@
 #include "timer.h"
 #include "dataStructures.h"
 #include <stdlib.h>
+<<<<<<< HEAD
 #include <stdio.h>
+=======
+>>>>>>> ebc4b09f28de0834e63d42ccc4efd81ca92368d6
 #include <pthread.h>
 #include <sys/time.h>
 

@@ -1,0 +1,7 @@
+*.sh
+*.tar.gz
+*.o
+*.cnf
+*.mdf
+.vscode
+sim03

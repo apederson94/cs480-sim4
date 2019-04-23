@@ -250,11 +250,14 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                         //runs app for amount of time stored in runtime struct
                         printf("SUBTRACTED %d ms FROM PROCESS %d FOR %s\n", ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS)), controlBlock->processNum, controlBlock->pc->operationString);
                         pthread_create(&threadIds[controlBlock->processNum], NULL, runFor, &args);
+<<<<<<< HEAD
 
                         if (controlBlock->pc->commandLetter == 'P')
                         {
                             pthread_join(threadIds[controlBlock->processNum], NULL);
                         }
+=======
+>>>>>>> ebc4b09f28de0834e63d42ccc4efd81ca92368d6
                     
                     }
 
@@ -406,7 +409,11 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
             //TODO: CHECK FOR ALL APPS DONE JUST IN CASE98
             
         }
+<<<<<<< HEAD
         else if (pcbList[runningApp]->timeRemaining > 0) //regular execution flow otherwise
+=======
+        else if (controlBlock->timeRemaining > 0) //regular execution flow otherwise
+>>>>>>> ebc4b09f28de0834e63d42ccc4efd81ca92368d6
         {
             sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
             logIt(line, logList, logToMon, logToFile);
