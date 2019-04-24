@@ -10,7 +10,7 @@
         * FCFS-N
         * SJF-N
 */
-int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double *interrupts[])
+int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double *interrupts)
 {
     int pcbIter, nextJob, interrupt;
 
@@ -78,11 +78,6 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
         for (pcbIter = 0; pcbIter < numProcesses; pcbIter++)
         {
 
-<<<<<<< HEAD
-=======
-            printf("%d STATE: %d\n", pcbIter, pcbList[pcbIter]->state);
-
->>>>>>> ebc4b09f28de0834e63d42ccc4efd81ca92368d6
             //if time remaining isn't 0, select the first process in the array
             if (pcbList[pcbIter]->timeRemaining != 0 
             && (pcbList[pcbIter]-> state == READY_STATE || pcbList[pcbIter]-> state == RUNNING_STATE))

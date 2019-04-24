@@ -9,7 +9,7 @@ struct runForArgs
 {
     struct timeval runtime;
     struct PCB **pcbList;
-    double **interrupts;
+    double *interrupts;
     char cmdLtr;
     int pid;
 };
@@ -24,4 +24,4 @@ double tv2double(struct timeval tv);
 void* threadTimer(void *args);
 
 //runs a program for an amount of time
-void runFor(void *args);
+void* runFor(void *args);

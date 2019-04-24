@@ -1,10 +1,7 @@
 #include "timer.h"
 #include "dataStructures.h"
 #include <stdlib.h>
-<<<<<<< HEAD
 #include <stdio.h>
-=======
->>>>>>> ebc4b09f28de0834e63d42ccc4efd81ca92368d6
 #include <pthread.h>
 #include <sys/time.h>
 
@@ -44,34 +41,41 @@ struct timeval execTime(struct timeval start)
 /*
     creates a pthread that runs a timer for timeval amount of time
 */
-void runFor(void *arguments)
+void* runFor(void *arguments)
 {
     pthread_t threadId; 
-    struct runForArgs *args = (struct runForArgs*) arguments;
-    int pid = args->pid;
-    struct timeval runtime = args->runtime;
+    struct runForArgs args = *((struct runForArgs*) arguments);
+    int pid = args.pid;
+    struct timeval runtime = args.runtime;
     struct timeval currTime;
-    char cmdLtr = args->cmdLtr;
+    char cmdLtr = args.cmdLtr;
+    struct timeval timenow;
+    gettimeofday(&timenow, NULL);
+    double tiime = tv2double(timenow);
 
+    printf("%lf PID BEFORE CREATE: %d\n", tiime, pid);
     //pass in time to run for, and clock start time for program
     pthread_create(&threadId, NULL, threadTimer, &runtime);
+    printf("%lf PID AFTER CREATE: %d\n", tiime, pid);
 
     //TODO: this may be getting subtracted twice when I run through again on I/O ops. I'll need to double check...
 
     //TODO: Process 3 is chosen way too frequently. What's up with that??
-
+    printf("%lf PID AFTER JOIN: %d\n", tiime, pid);
     //wait for thread to return
     pthread_join(threadId, NULL);
+    printf("%lf PID AFTER JOIN: %d\n", tiime, pid);
 
     if (cmdLtr == 'I' || cmdLtr == 'O')
     {
         //TODO: CHECK THE DOUBLE SELECTED PROCESS LOG OUTPUT
         //TODO: THESE VALUES AREN'T TRANSLATING TO THE OUTSIDE WORLD. THAT'S WHERE THE DISCONNECT IS HAPPENING, I THINK
         gettimeofday(&currTime, NULL);
-        *(args->interrupts[pid]) = tv2double(currTime);
-        printf("PID: %d\n", pid);
-        args->pcbList[pid]->state = READY_STATE;
+        args.interrupts[pid] = tv2double(currTime);
+        args.pcbList[pid]->state = READY_STATE;
     }
+
+    return NULL;
 }
 
 /*
@@ -80,7 +84,7 @@ void runFor(void *arguments)
         * checks difference between those times:
             * when time difference is equal to the runtime values, return
 */
-void * threadTimer(void *args)
+void* threadTimer(void *args)
 {
 
     //convert argument to correct type 
@@ -114,7 +118,7 @@ void * threadTimer(void *args)
         }
     }
 
-    return 0;
+    return NULL;
 }
 
 //converts a timeval to double and returns it

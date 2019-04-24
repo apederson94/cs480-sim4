@@ -10,6 +10,6 @@ enum
 };
 
 //checks for interrupts
-int checkForInterrupt(double *interrupts[], int numApps);
+int checkForInterrupt(double *interrupts, int numApps);
 
 #endif
