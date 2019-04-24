@@ -53,26 +53,17 @@ void* runFor(void *arguments)
     gettimeofday(&timenow, NULL);
     double tiime = tv2double(timenow);
 
-    printf("%lf PID BEFORE CREATE: %d\n", tiime, pid);
     //pass in time to run for, and clock start time for program
     pthread_create(&threadId, NULL, threadTimer, &runtime);
-    printf("%lf PID AFTER CREATE: %d\n", tiime, pid);
 
-    //TODO: this may be getting subtracted twice when I run through again on I/O ops. I'll need to double check...
-
-    //TODO: Process 3 is chosen way too frequently. What's up with that??
-    printf("%lf PID AFTER JOIN: %d\n", tiime, pid);
-    //wait for thread to return
+    //wait for thread to return before deciding whether to cause an interrupt
     pthread_join(threadId, NULL);
-    printf("%lf PID AFTER JOIN: %d\n", tiime, pid);
 
     if (cmdLtr == 'I' || cmdLtr == 'O')
     {
-        //TODO: CHECK THE DOUBLE SELECTED PROCESS LOG OUTPUT
-        //TODO: THESE VALUES AREN'T TRANSLATING TO THE OUTSIDE WORLD. THAT'S WHERE THE DISCONNECT IS HAPPENING, I THINK
         gettimeofday(&currTime, NULL);
         args.interrupts[pid] = tv2double(currTime);
-        args.pcbList[pid]->state = READY_STATE;
+        //args.pcbList[pid]->state = READY_STATE;
     }
 
     return NULL;

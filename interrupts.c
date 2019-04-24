@@ -3,7 +3,12 @@
 #include <math.h>
 #include "interrupts.h"
 
-
+/*
+    * checks for any interrupts:
+       * iterates over interrupts array and finds interrupts
+       * selects interrupt that happened first
+       * returns selected interrupt's corresponding process number
+*/
 int checkForInterrupt(double *interrupts, int numApps)
 {
     int intIter, soonest;
@@ -14,11 +19,6 @@ int checkForInterrupt(double *interrupts, int numApps)
     for (intIter = 0; intIter < numApps; intIter++)
     {
         currTime = interrupts[intIter];
-
-        if(currTime > 0.0)
-        {
-            printf("%d CURRENT TIME: %lf\n", intIter, currTime);
-        }
 
         if (currTime != 0.0 && currTime <= soonestTime)
         {
