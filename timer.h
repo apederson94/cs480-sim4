@@ -12,7 +12,18 @@ struct runForArgs
     double *interrupts;
     char cmdLtr;
     int pid;
+    double cpuCycleTime;
+    int elapsedCycles;
+    char *cpuSched;
 };
+
+struct timerArgs
+{
+    struct timeval runtime;
+    double *interrupts;
+    double cpuCycleTime;
+    int elapsedCycles;
+}
 
 //returns time of execution local to program
 struct timeval execTime(struct timeval start);

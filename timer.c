@@ -49,12 +49,13 @@ void* runFor(void *arguments)
     struct timeval runtime = args.runtime;
     struct timeval currTime;
     char cmdLtr = args.cmdLtr;
-    struct timeval timenow;
-    gettimeofday(&timenow, NULL);
-    double tiime = tv2double(timenow);
+    struct timerArgs targs;
+
+    targs.runtime = runtime;
+    targs.cpuCycleTime = args.cpuCycleTime;
 
     //pass in time to run for, and clock start time for program
-    pthread_create(&threadId, NULL, threadTimer, &runtime);
+    pthread_create(&threadId, NULL, threadTimer, &targs);
 
     //wait for thread to return before deciding whether to cause an interrupt
     pthread_join(threadId, NULL);
@@ -63,7 +64,6 @@ void* runFor(void *arguments)
     {
         gettimeofday(&currTime, NULL);
         args.interrupts[pid] = tv2double(currTime);
-        //args.pcbList[pid]->state = READY_STATE;
     }
 
     return NULL;
@@ -79,9 +79,11 @@ void* threadTimer(void *args)
 {
 
     //convert argument to correct type 
-    struct timeval *runtime = (struct timeval*) args;
+    struct targs = *((struct timerArgs*) args);
+    struct timeval runtime = targs.runtime;
     struct timeval time;
     struct timeval start;
+    struct timeval diff;
     int secDiff, usecDiff;
 
     //gets start time and current time
@@ -91,15 +93,27 @@ void* threadTimer(void *args)
     //calculate the difference between start and current time
     secDiff = time.tv_sec - start.tv_sec;
     usecDiff = time.tv_sec - start.tv_sec;
+    diff.tv_sec = secDiff
+    diff.tv_usec = usecDiff
 
     //while seconds or useconds are less than runtime values, keep running
-    while(secDiff < runtime->tv_sec || usecDiff < runtime->tv_usec)
+    while(secDiff < runtime.tv_sec || usecDiff < runtime.tv_usec)
     {
+        //TODO: MAKE P(RUN) ON INTERRUPT WORK BETTER
+        if (tv2double(diff) >= targs.cpuCycleTime)
+        {
+            if (checkForInterrupts(targs.interrupts) >= 0)
+            {
+                return elapsedCycles;
+            }
+        }
 
         //gets the current time and then updates secDiff and usecDiff
         gettimeofday(&time, NULL);
         secDiff = time.tv_sec - start.tv_sec;
         usecDiff = time.tv_usec - start.tv_usec;
+        diff.tv_sec = secDiff
+        diff.tv_usec = usecDiff
 
         //if usecDiff is negative, add USEC_PER_SEC to it and decrement secDiff
         if (usecDiff < 0)
