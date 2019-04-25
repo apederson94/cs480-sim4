@@ -38,7 +38,7 @@ struct timerArgs
 }
 
 //returns time of execution local to program
-struct timeval
+struct timevals
 execTime(struct timeval start);
 
 //converts timeval to double
