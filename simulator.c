@@ -12,6 +12,8 @@
 #include <sys/time.h>
 #include <pthread.h>
 
+//TODO: MISSING SOME TIME WHEN P(RUN) COMES BACK FROM INTERRUPTION
+
 void runInterrupt(struct PCB *block, double *interrupts, struct timeval startTime, struct logEvent *logList, bool logToMon, bool logToFile, char *type, char *line)
 {
     bool wasInterrupted = interrupts[block->processNum] == WAS_INTERRUPTED;
@@ -22,15 +24,17 @@ void runInterrupt(struct PCB *block, double *interrupts, struct timeval startTim
     {
         sprintf(line, "[%lf] Process: %d, %s %s start\n", tv2double(execTime(startTime)), block->processNum, block->pc->operationString, type);
         logIt(line, logList, logToMon, logToFile);
+        
+        
     }
     else
     {
         sprintf(line, "\n[%lf] OS: Interrupt called by process %d\n", tv2double(execTime(startTime)), block->processNum);
         logIt(line, logList, logToMon, logToFile);
+        
+        sprintf(line, "[%lf] Process: %d, %s %s end\n", tv2double(execTime(startTime)), block->processNum, block->pc->operationString, type);
+		logIt(line, logList, logToMon, logToFile);
     }
-
-    sprintf(line, "[%lf] Process: %d, %s %s end\n", tv2double(execTime(startTime)), block->processNum, block->pc->operationString, type);
-    logIt(line, logList, logToMon, logToFile);
 
     if (!wasInterrupted)
     {
@@ -59,6 +63,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
     bool programsToRun = TRUE;
     bool logToMon = FALSE;
     bool logToFile = FALSE;
+    bool didFinishOnCPU;
 
     //initializes MMU
     initializeMMU(mmu);
@@ -147,10 +152,8 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
 
         //sets current PCB and current program counter
         controlBlock = pcbList[runningApp];
-
-        printf("GET IN: %d\n", !strCmp(controlBlock->pc->operationString, "end") 
-        && controlBlock->timeRemaining != 0);
-        printf("END: %d\n", strCmp(controlBlock->pc->operationString, "end"));
+        didFinishOnCPU = TRUE;
+        
         printf("TIME: %d\n", controlBlock->timeRemaining);
 
         //iterates until A(end) occurs
@@ -315,7 +318,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                             controlBlock->timeRemaining -= ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS));
                             printf("TIME TO SUBTRACT: %d\n", ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS)));
 
-                            //TODO: MAKE SURE THIS WORKS RIGHT
+                            //TODO: SOMETIMES THE INTERRUPT WILL HAPPEN RIGHT WHEN A PROCESS FINISHES ON THE CPU. FIX THIS SOMEHOW
                             interrupt = checkForInterrupt(interrupts, numApps);
                             if (interrupt >= 0)
                             {
@@ -326,15 +329,15 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                                 }
                             }
 
-
-                            //TODO: MAKE INTERRUPT ACTUALLY WORK. CURRENTLY LOWKEY DOESN'T WORK AND IS LAME AS FUCK
-
-                            //printf("%d, %ld\n", cyclesRun, controlBlock->pc->assocVal);
-
-                            if (cyclesRun < controlBlock->pc->assocVal)
+                            if (cyclesRun < controlBlock->pc->assocVal && checkForInterrupt(interrupts, numApps) >= 0)
                             {
                                 controlBlock->pc->assocVal -= (long int)cyclesRun;
+                                didFinishOnCPU = FALSE;
                             }
+                            else
+                            {
+								didFinishOnCPU = TRUE;
+							}
                         
                         }
                         else
@@ -376,8 +379,9 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
             }
 
             //iterates program counter
-            if (controlBlock->state != WAITING_STATE && interrupts[controlBlock->processNum] != WAS_INTERRUPTED)
+            if (controlBlock->state != WAITING_STATE && didFinishOnCPU)
             {
+				//TODO: THIS BLOCK IS ENTERED WHEN BLOCK WAS INTERRUPTED
                 controlBlock->pc = controlBlock->pc->next;
             }
 
