@@ -37,7 +37,10 @@ void strCopy(char *src, char *dest)
         }
 
         //adds null terminator to end of string
-        dest[pos] = '\0';
+        if (dest[pos] != '\0')
+        {
+            dest[pos] = '\0';
+        }
     }
 }
 
@@ -78,7 +81,6 @@ int strCmp(const char* src, char* target)
     //iterates over src string
     for (int pos = 0; pos < srcLen; pos++) 
     {
-
         //if any characters do not match, return FALSE
         if (src[pos] != target[pos])
         {

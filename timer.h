@@ -29,16 +29,16 @@ struct timerArgs
     int numApps;
 };
 
-struct timerArgs
+/* struct timerArgs
 {
     struct timeval runtime;
     double *interrupts;
     double cpuCycleTime;
     int elapsedCycles;
-}
+} */
 
 //returns time of execution local to program
-struct timevals
+struct timeval
 execTime(struct timeval start);
 
 //converts timeval to double

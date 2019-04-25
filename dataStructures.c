@@ -474,3 +474,29 @@ int verifySettings(struct configValues *settings)
 
     return 0;
 }
+
+int getSchedCode(char *cpuSched)
+{
+    if (strCmp(cpuSched, "FCFS-N"))
+    {
+        return FCFS_N;
+    }
+    else if (strCmp(cpuSched, "SJF-N"))
+    {
+        return SJF_N;
+    }
+    else if (strCmp(cpuSched, "FCFS-P"))
+    {
+        return FCFS_P;
+    }
+    else if (strCmp(cpuSched, "SRTF-P"))
+    {
+        return SRTF_P;
+    }
+    else if (strCmp(cpuSched, "RR-P"))
+    {
+        return RR_P;
+    }
+
+    return NOT_SUPPORTED;
+}

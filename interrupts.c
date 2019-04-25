@@ -20,6 +20,11 @@ int checkForInterrupt(double *interrupts, int numApps)
     {
         currTime = interrupts[intIter];
 
+        if (currTime == WAS_INTERRUPTED)
+        {
+            return intIter;
+        }
+
         if (currTime != 0.0 && currTime <= soonestTime)
         {
             soonest = intIter;
@@ -29,3 +34,5 @@ int checkForInterrupt(double *interrupts, int numApps)
 
     return soonest;
 }
+
+//TODO: FIX ERROR WITH NEXT INSTRUCTION BEING EXECUTED AFTER INTERRUPT

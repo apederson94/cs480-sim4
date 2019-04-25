@@ -90,11 +90,8 @@ void *runFor(void *arguments)
         pthread_join(threadId, NULL);
         gettimeofday(&currTime, NULL);
         args.interrupts[pid] = tv2double(currTime);
-<<<<<<< HEAD
 
         return NULL;
-=======
->>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
     }
 }
 
@@ -113,6 +110,7 @@ void *threadTimerRun(void *args)
     struct timeval start;
     struct timeval diff;
     int secDiff, usecDiff, cyclesRun;
+    int cyclesToRun = tv2double(targs.runtime) / (targs.cpuCycleTime / MS_PER_SEC);
 
     cyclesRun = 0;
 
@@ -127,7 +125,7 @@ void *threadTimerRun(void *args)
     diff.tv_usec = usecDiff;
 
     //while seconds or useconds are less than runtime values, keep running
-    while (cyclesRun + targs.elapsedCycles < targs.quantum)
+    while (cyclesRun + targs.elapsedCycles < targs.quantum && cyclesRun < cyclesToRun)
     {
         while (tv2double(diff) < (targs.cpuCycleTime / MS_PER_SEC))
         {
@@ -151,9 +149,10 @@ void *threadTimerRun(void *args)
         diff.tv_usec = 0;
         cyclesRun += 1;
 
-        if (checkForInterrupt(targs.interrupts, targs.numApps))
+        if (checkForInterrupt(targs.interrupts, targs.numApps) >= 0)
         {
-            break;
+            printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@INTERRUPTED BY %d\n", checkForInterrupt(targs.interrupts, targs.numApps));
+            return (void *)cyclesRun;
         }
         //TODO: MAKE P(RUN) ON INTERRUPT WORK BETTER
     }
@@ -170,17 +169,11 @@ void *threadTimerRun(void *args)
 void *threadTimer(void *args)
 {
 
-<<<<<<< HEAD
     //convert argument to correct type
     struct timerArgs targs = *((struct timerArgs *)args);
-=======
-    //convert argument to correct type
-    struct targs = *((struct timerArgs *)args);
->>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
     struct timeval runtime = targs.runtime;
     struct timeval time;
     struct timeval start;
-    struct timeval diff;
     int secDiff, usecDiff;
 
     //gets start time and current time
@@ -190,31 +183,15 @@ void *threadTimer(void *args)
     //calculate the difference between start and current time
     secDiff = time.tv_sec - start.tv_sec;
     usecDiff = time.tv_sec - start.tv_sec;
-    diff.tv_sec = secDiff
-                      diff.tv_usec = usecDiff
 
         //while seconds or useconds are less than runtime values, keep running
-<<<<<<< HEAD
         while (secDiff < runtime.tv_sec || usecDiff < runtime.tv_usec)
-=======
-        while (secDiff < runtime.tv_sec || usecDiff < runtime.tv_usec)
->>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
     {
-        //TODO: MAKE P(RUN) ON INTERRUPT WORK BETTER
-        if (tv2double(diff) >= targs.cpuCycleTime)
-        {
-            if (checkForInterrupts(targs.interrupts) >= 0)
-            {
-                return elapsedCycles;
-            }
-        }
 
         //gets the current time and then updates secDiff and usecDiff
         gettimeofday(&time, NULL);
         secDiff = time.tv_sec - start.tv_sec;
         usecDiff = time.tv_usec - start.tv_usec;
-        diff.tv_sec = secDiff
-                          diff.tv_usec = usecDiff
 
             //if usecDiff is negative, add USEC_PER_SEC to it and decrement secDiff
             if (usecDiff < 0)

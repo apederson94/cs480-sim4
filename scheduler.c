@@ -11,6 +11,9 @@
     * basic scheduler that supports:
         * FCFS-N
         * SJF-N
+        * FCFS-P
+        * SRTF-P
+        * RR-P
 */
 int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double *interrupts)
 {
@@ -82,6 +85,10 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
         //error codes are less than zero so this will only ever return a process number
         if (interrupt >= 0)
         {
+            if (interrupts[interrupt] == WAS_INTERRUPTED)
+            {
+                interrupts[interrupt] = 0.0;
+            }
             return interrupt;
         }
 

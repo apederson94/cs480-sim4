@@ -6,7 +6,8 @@
 //defines all structs and functions tied to interrupts
 enum
 {
-    NO_INTERRUPTS = -900
+    NO_INTERRUPTS = -900,
+    WAS_INTERRUPTED = -480
 };
 
 //checks for interrupts

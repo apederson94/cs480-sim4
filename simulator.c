@@ -16,7 +16,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
 {
     //TODO: create an interrupted var to hold the process number of the interrupted process so that resuming is possible
     //TODO: do P(run) iterations checking for interrupt
-    int numApps, runningApp, timeSec, timeUsec, totalTime, cycleTime, memoryReturn, elapsedCycles;
+    int numApps, runningApp, timeSec, timeUsec, totalTime, cycleTime, memoryReturn, *elapsedCycles, updatedTime, schedCode, interrupt;
     int memoryValues[3];
     void *cyclesRun;
     double *interrupts;
@@ -28,8 +28,6 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
     bool programsToRun = TRUE;
     bool logToMon = FALSE;
     bool logToFile = FALSE;
-    bool isInterrupt = FALSE;
-    bool idleInterrupt = FALSE;
 
     //initializes MMU
     initializeMMU(mmu);
@@ -75,11 +73,11 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
     //allocating memory for interrupts array
     interrupts = calloc(numApps, sizeof(double));
 
+    //allocating memory for elapsedCycles array
+    elapsedCycles = (int *) calloc(numApps, sizeof(int));
+
     //initializing pthreads
     pthread_t threadIds[numApps];
-
-    //initializing elapsed cycles variable for RR-P
-    elapsedCycles = 0;
 
     //creates PCB array
     createPCBList(pcbList, actionsList, settings);
@@ -95,6 +93,9 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
 
     //schedules the next app to be run
     runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
+
+    //converting scheduler string to code for easier comparisons
+    schedCode = getSchedCode(settings->cpuSched);
 
     //error checking
     if (runningApp < 0)
@@ -117,7 +118,8 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
         controlBlock = pcbList[runningApp];
 
         //iterates until A(end) occurs
-        while (!strCmp(controlBlock->pc->operationString, "end") && controlBlock->timeRemaining != 0 && !isInterrupt)
+        while (!strCmp(controlBlock->pc->operationString, "end") 
+        && controlBlock->timeRemaining != 0)
         {
             memoryReturn = 0;
 
@@ -153,18 +155,18 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                 }
 
                 //handles RR-P quantumTime
-                if (strCmp(settings->cpuSched, "RR-P") && controlBlock->pc->commandLetter == 'P' && controlBlock->pc->assocVal + elapsedCycles > settings->quantumTime)
+                if (schedCode == RR_P && controlBlock->pc->commandLetter == 'P' && controlBlock->pc->assocVal + elapsedCycles[controlBlock->processNum] > settings->quantumTime)
                 {
-                    controlBlock->pc->assocVal = controlBlock->pc->assocVal + elapsedCycles - settings->quantumTime;
-                    elapsedCycles = settings->quantumTime;
+                    //controlBlock->pc->assocVal = controlBlock->pc->assocVal + elapsedCycles - settings->quantumTime;
+                    //elapsedCycles = settings->quantumTime;
                 }
-                else if (strCmp(settings->cpuSched, "RR-P") && controlBlock->pc->commandLetter == 'P')
+                else if (schedCode == RR_P && controlBlock->pc->commandLetter == 'P')
                 {
-                    elapsedCycles += controlBlock->pc->assocVal;
+                    //elapsedCycles += controlBlock->pc->assocVal;
                 }
-                else if (strCmp(settings->cpuSched, "RR-P") && controlBlock->pc->commandLetter == 'P')
+                else if (schedCode == RR_P && controlBlock->pc->commandLetter == 'P')
                 {
-                    elapsedCycles += controlBlock->pc->assocVal;
+                    //elapsedCycles += controlBlock->pc->assocVal;
                 }
 
                 //creating time time values and setting timeval data
@@ -266,13 +268,11 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                         args[controlBlock->processNum].interrupts = interrupts;
                         args[controlBlock->processNum].pid = controlBlock->processNum;
                         args[controlBlock->processNum].cpuSched = settings->cpuSched;
-<<<<<<< HEAD
                         args[controlBlock->processNum].cpuCycleTime = (double)settings->cpuCycleTime;
                         args[controlBlock->processNum].numApps = numApps;
                         args[controlBlock->processNum].quantum = settings->quantumTime;
-=======
-                        args[controlBlock->processNum].cpuCycleTime = (double)settings->cpuCycleTime;
->>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
+                        args[controlBlock->processNum].elapsedCycles = elapsedCycles[controlBlock->processNum];
+
 
                         //runs app for amount of time stored in runtime struct
                         pthread_create(&threadIds[controlBlock->processNum], NULL, runFor, &args[controlBlock->processNum]);
@@ -280,42 +280,54 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                         if (controlBlock->pc->commandLetter == 'P')
                         {
                             pthread_join(threadIds[controlBlock->processNum], &cyclesRun);
-                            printf("cycles run: %d\n", cyclesRun);
-                            elapsedCycles += (int)cyclesRun;
+                            elapsedCycles[controlBlock->processNum] += (int)cyclesRun;
+                            printf("cycles run: %d, total: %d\n", cyclesRun, elapsedCycles[controlBlock->processNum]);
                             //TODO: HANDLES CYCLES TIME HERE TO UPDATE TIMESEC AND TIMEUSEC
-                        }
-                    }
+                            updatedTime = (int)cyclesRun * settings->cpuCycleTime;
+                            timeSec = updatedTime / MS_PER_SEC;
+                            timeUsec = (updatedTime % MS_PER_SEC) * USEC_PER_MS;
 
-                    if (args[controlBlock->processNum].cmdLtr == 'I' || args[controlBlock->processNum].cmdLtr == 'O')
-                    {
-                        if (interrupts[controlBlock->processNum] == 0.0)
-                        {
-                            controlBlock->state = WAITING_STATE;
+                            //TODO: MAKE SURE THIS WORKS RIGHT
+                            interrupt = checkForInterrupt(interrupts, numApps);
+                            if (interrupt >= 0)
+                            {
+                                interrupts[controlBlock->processNum] = WAS_INTERRUPTED;
+                                runInterrupt(pcbList[interrupt], startTime, logList, logToMon, logToFile);
+                            }
+
+
+                            //TODO: MAKE INTERRUPT ACTUALLY WORK. CURRENTLY LOWKEY DOESN'T WORK AND IS LAME AS FUCK
+
+                            printf("%d, %ld\n", cyclesRun, controlBlock->pc->assocVal);
+
+                            if (cyclesRun < controlBlock->pc->assocVal)
+                            {
+                                controlBlock->pc->assocVal -= (long int)cyclesRun;
+                            }
+                        
                         }
                         else
                         {
-                            interrupts[controlBlock->processNum] = 0.0;
-                            //sprintf(line, "[%lf] Process: %d, %s %s end\n", tv2double(execTime(startTime)), controlBlock->processNum, controlBlock->pc->operationString, type);
-                            //logIt(line, logList, logToMon, logToFile);
-                            isInterrupt = TRUE;
-                            idleInterrupt = FALSE;
-
-                            if (!idleInterrupt && controlBlock->state == WAITING_STATE)
+                            if (interrupts[controlBlock->processNum] == 0.0)
                             {
-                                controlBlock->state = READY_STATE;
-                                sprintf(line, "[%lf] OS: Process %d set in READY state\n", tv2double(execTime(startTime)), runningApp);
+                                controlBlock->state = WAITING_STATE;
+                                sprintf(line, "\n[%lf] OS: Process %d set in WAITING state\n", tv2double(execTime(startTime)), runningApp);
                                 logIt(line, logList, logToMon, logToFile);
                             }
+                            else
+                            {
+                                interrupts[controlBlock->processNum] = 0.0;
+                                sprintf(line, "[%lf] Process: %d, %s %s end\n", tv2double(execTime(startTime)), controlBlock->processNum, controlBlock->pc->operationString, type);
+                                logIt(line, logList, logToMon, logToFile);
+
+                                if (controlBlock->state == WAITING_STATE)
+                                {
+                                    controlBlock->state = READY_STATE;
+                                    sprintf(line, "[%lf] OS: Process %d set in READY state\n", tv2double(execTime(startTime)), runningApp);
+                                    logIt(line, logList, logToMon, logToFile);
+                                }
+                            }
                         }
-<<<<<<< HEAD
-=======
-                        
-                        
->>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
-                    }
-                    else
-                    {
-                        pthread_join(threadIds[controlBlock->processNum], NULL);
                     }
 
                     //formatting output for logging
@@ -333,7 +345,10 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                         }
                         else
                         {
-                            sprintf(line, "[%lf] Process: %d, %s %s end\n", tv2double(execTime(startTime)), controlBlock->processNum, controlBlock->pc->operationString, type);
+                            if (interrupts[controlBlock->processNum] != WAS_INTERRUPTED)
+                            {
+                                sprintf(line, "[%lf] Process: %d, %s %s end\n", tv2double(execTime(startTime)), controlBlock->processNum, controlBlock->pc->operationString, type);
+                            }
                         }
 
                         if (interrupts[controlBlock->processNum] != 0.0)
@@ -352,17 +367,26 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                 controlBlock->pc = controlBlock->pc->next;
             }
 
+            //TODO: MAKE SURE ONLY CALL RUNNING APP ONCE
+
             //selects next running application
             if (controlBlock->timeRemaining != 0)
             {
+
                 //handles RR-P quantumTime
-                if ((strCmp(settings->cpuSched, "RR-P") && elapsedCycles == settings->quantumTime) || controlBlock->state == WAITING_STATE)
+                if ((schedCode == RR_P && elapsedCycles[controlBlock->processNum] == settings->quantumTime)
+                || controlBlock->state == WAITING_STATE)
                 {
-                    elapsedCycles = 0;
+                    elapsedCycles[controlBlock->processNum] = 0;
                     runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
                 }
-                else if (!strCmp(settings->cpuSched, "RR-P"))
+                else if (schedCode == RR_P)
                 {
+                    runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
+                }
+                else if (!(schedCode == RR_P))
+                {
+                    elapsedCycles[controlBlock->processNum] = 0;
                     runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
                 }
 
@@ -376,8 +400,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                     while (runningApp == NO_APPS_READY)
                     {
                         runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
-                        isInterrupt = TRUE;
-                        idleInterrupt = TRUE;
+                        elapsedCycles[controlBlock->processNum] = 0;
                     }
 
                     sprintf(line, "[%lf] OS: Interrupt called by process %d\n", tv2double(execTime(startTime)), runningApp);
@@ -390,25 +413,15 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
 
                     //TODO: CHECK FOR INTERRUPTS ON EACH CYCLE WHEN P(RUN) IS HAPPENING
                 }
-                else
-                {
-                    isInterrupt = interrupts[runningApp] > 0.0;
-                }
 
                 pcbList[runningApp]->state = RUNNING_STATE;
 
                 if (runningApp != controlBlock->processNum)
                 {
-                    if (!isInterrupt)
-                    {
-                        sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
-                        logIt(line, logList, logToMon, logToFile);
-                    }
-                    else if (isInterrupt && !idleInterrupt)
-                    {
-                        sprintf(line, "\n[%lf] OS: Interrupt called by process %d\n\n", tv2double(execTime(startTime)), runningApp);
-                        logIt(line, logList, logToMon, logToFile);
-                    }
+
+                    sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
+                    logIt(line, logList, logToMon, logToFile);
+
 
                     //sets current PCB and current program counter
                     controlBlock = pcbList[runningApp];
@@ -444,11 +457,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
 
         //schedules the next app to be run
         runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
-
-        if (runningApp >= 0)
-        {
-            isInterrupt = interrupts[runningApp] > 0.0;
-        }
+        elapsedCycles[controlBlock->processNum] = 0;
 
         //if ALL_PROGRAMS_DONE received from scheduler, set programsToRun to FALSE
         if (runningApp == ALL_PROGRAMS_DONE)
@@ -463,8 +472,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
             while (runningApp == NO_APPS_READY)
             {
                 runningApp = scheduleNext(pcbList, settings->cpuSched, numApps, interrupts);
-                isInterrupt = TRUE;
-                idleInterrupt = TRUE;
+                elapsedCycles[controlBlock->processNum] = 0;
             }
 
             sprintf(line, "[%lf] OS: Interrupt called by process %d\n", tv2double(execTime(startTime)), runningApp);
@@ -479,24 +487,15 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
         }
         else if (pcbList[runningApp]->timeRemaining > 0) //regular execution flow otherwise
         {
-            if (isInterrupt)
-            {
-                isInterrupt = FALSE;
-            }
-            else if (isInterrupt && !idleInterrupt)
-            {
-                sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
-                logIt(line, logList, logToMon, logToFile);
 
-                sprintf(line, "[%lf] OS: Process %d set in RUNNING state\n", tv2double(execTime(startTime)), runningApp);
-                logIt(line, logList, logToMon, logToFile);
-            }
+            sprintf(line, "[%lf] OS: Selected process %d with %dms remaining\n", tv2double(execTime(startTime)), runningApp, pcbList[runningApp]->timeRemaining);
+            logIt(line, logList, logToMon, logToFile);
+
+            sprintf(line, "[%lf] OS: Process %d set in RUNNING state\n", tv2double(execTime(startTime)), runningApp);
+            logIt(line, logList, logToMon, logToFile);
+
 
             pcbList[runningApp]->state = RUNNING_STATE;
-        }
-        else if (isInterrupt)
-        {
-            isInterrupt = FALSE;
         }
     }
 
@@ -513,4 +512,39 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
     free(line);
 
     return 0;
+}
+
+void runInterrupt(struct PCB *block, struct timeval startTime, struct logEvent *logList, bool logToMon, bool logToFile)
+{
+    char line[100];
+    char *type;
+
+    sprintf(line, "\n[%lf] Interrupt called by process %d\n", tv2double(execTime(startTime)), block->processNum);
+    logIt(line, logList, logToMon, logToFile);
+
+    switch (block->pc->commandLetter)
+    {
+        //if program counter's command letter is 'P
+        case 'P':
+            type = "operation";
+            break;
+        //if program counter's command letter is 'I'
+        case 'I':
+            type = "input";
+            break;
+        //if program counter's command letter is 'O'
+        case 'O':
+            type = "output";
+            break;
+        //if program counter's command letter is 'M'
+        case 'M':
+            type = "memory";
+            break;
+        //should never be reached by this point in the program
+        default:
+            break;
+    }
+    sprintf(line, "[%lf] Process: %d, %s %s end\n", tv2double(execTime(startTime)), block->processNum, block->pc->operationString, type);
+    logIt(line, logList, logToMon, logToFile);
+    block->pc = block->pc->next;
 }

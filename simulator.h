@@ -14,4 +14,7 @@
 */
 int simulate(struct simAction *actionsList, struct configValues *settings, struct logEvent *logList);
 
+//runs interrupt command
+void runInterrupt(struct PCB *controlBlock, struct timeval startTime, struct logEvent *logList, bool logToMon, bool logToFile);
+
 #endif

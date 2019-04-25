@@ -49,6 +49,16 @@ enum
     EXIT_STATE
 };
 
+enum
+{
+    FCFS_N,
+    SJF_N,
+    FCFS_P,
+    SRTF_P,
+    RR_P,
+    NOT_SUPPORTED = -283
+};
+
 //creates a list of pcbs
 void createPCBList(struct PCB **pcbList, struct simAction *head, struct configValues *settings);
 
@@ -66,6 +76,9 @@ int setActionData(char *command, struct simAction *action);
 
 //RETURNS THE NUMBER OF APPLICATIONS TO BE RUN IN A SIM ACTION LIST
 int countApplications(struct simAction *head);
+
+//returns the cpu scheduler code for easier comparisons
+int getSchedCode(char *cpuSched);
 
 /*verifies that:
     * system opens at start and ends at end and both only occur once
