@@ -1,4 +1,5 @@
 #include "dataStructures.h"
+#include "booleans.h"
 
 #ifndef SCHEDULER
 #define SCHEDULER
@@ -9,8 +10,10 @@ enum
     APP_NOT_READY = -255
 };
 
-int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double *interrupts);
+int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *interrupts);
 
 int checkAllDone(struct PCB **pcbList, int numProcesses);
+
+bool isPreemptive(int schedCode);
 
 #endif

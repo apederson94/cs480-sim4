@@ -15,7 +15,7 @@
         * SRTF-P
         * RR-P
 */
-int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double *interrupts)
+int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *interrupts)
 {
     int pcbIter, nextJob, interrupt;
     static int tmp;
@@ -34,7 +34,7 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
     nextJob = NO_APPS_READY;
 
     //logic for dealing with "FCFS-N" scheduling type
-    if (strCmp(scheduler, "FCFS-N"))
+    if (schedCode == FCFS_N)
     {
 
         //iterates PCB array
@@ -52,7 +52,7 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
     }
 
     //logic for dealing with "SJF-N" scheduling type
-    else if (strCmp(scheduler, "SJF-N"))
+    else if (schedCode == SJF_N)
     {
 
         //iterates PCB array
@@ -76,7 +76,7 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
     }
 
     //logic for dealing with "SJF-P" scheduling type
-    else if (strCmp(scheduler, "FCFS-P"))
+    else if (schedCode == FCFS_P)
     {
 
         //process number of interrupt or error code
@@ -107,7 +107,7 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
     }
 
     //logic for dealing with "SRTF-P" scheduling type
-    else if (strCmp(scheduler, "SRTF-P"))
+    else if (schedCode == SRTF_P)
     {
 
         interrupt = checkForInterrupt(interrupts, numProcesses);
@@ -140,7 +140,7 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
     }
 
     //logic for dealing with "SJF-P" scheduling type
-    else if (strCmp(scheduler, "RR-P"))
+    else if (schedCode == RR_P)
     {
 
         //process number of interrupt or error code
@@ -149,6 +149,7 @@ int scheduleNext(struct PCB **pcbList, char *scheduler, int numProcesses, double
         //error codes are less than zero so this will only ever return a process number
         if (interrupt >= 0)
         {
+            printf("HINT HINT %d, %lf\n", interrupt, interrupts[interrupt]);
             return interrupt;
         }
 
@@ -210,4 +211,9 @@ int checkAllDone(struct PCB **pcbList, int numProcesses)
     }
 
     return TRUE;
+}
+
+bool isPreemptive(int schedCode)
+{
+    return schedCode >= 2;
 }

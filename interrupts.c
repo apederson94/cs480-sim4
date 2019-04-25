@@ -25,7 +25,7 @@ int checkForInterrupt(double *interrupts, int numApps)
             return intIter;
         }
 
-        if (currTime != 0.0 && currTime <= soonestTime)
+        if (currTime > 0.0 && currTime <= soonestTime)
         {
             soonest = intIter;
             soonestTime = currTime;

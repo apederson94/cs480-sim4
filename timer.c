@@ -72,23 +72,16 @@ void *runFor(void *arguments)
     if (args.cmdLtr == 'P')
     {
         pthread_create(&threadId, NULL, threadTimerRun, &targs[pid]);
-    }
-    else
-    {
-        pthread_create(&threadId, NULL, threadTimer, &targs[pid]);
-    }
-
-    //wait for thread to return before deciding whether to cause an interrupt
-    if (cmdLtr == 'P')
-    {
         pthread_join(threadId, &cyclesRun);
 
         return cyclesRun;
     }
     else
     {
+        pthread_create(&threadId, NULL, threadTimer, &targs[pid]);
         pthread_join(threadId, NULL);
         gettimeofday(&currTime, NULL);
+        printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ INTERRUPT SENT %d @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n", pid);
         args.interrupts[pid] = tv2double(currTime);
 
         return NULL;
