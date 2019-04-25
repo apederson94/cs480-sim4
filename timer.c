@@ -52,6 +52,7 @@ void *runFor(void *arguments)
     struct timeval runtime = args.runtime;
     struct timeval currTime;
     char cmdLtr = args.cmdLtr;
+<<<<<<< HEAD
     static struct timerArgs *targs;
     static bool notSet = TRUE;
 
@@ -77,6 +78,15 @@ void *runFor(void *arguments)
     {
         pthread_create(&threadId, NULL, threadTimer, &targs[pid]);
     }
+=======
+    struct timerArgs targs;
+
+    targs.runtime = runtime;
+    targs.cpuCycleTime = args.cpuCycleTime;
+
+    //pass in time to run for, and clock start time for program
+    pthread_create(&threadId, NULL, threadTimer, &targs);
+>>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
 
     //wait for thread to return before deciding whether to cause an interrupt
     if (cmdLtr == 'P')
@@ -90,8 +100,11 @@ void *runFor(void *arguments)
         pthread_join(threadId, NULL);
         gettimeofday(&currTime, NULL);
         args.interrupts[pid] = tv2double(currTime);
+<<<<<<< HEAD
 
         return NULL;
+=======
+>>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
     }
 }
 
@@ -167,11 +180,17 @@ void *threadTimerRun(void *args)
 void *threadTimer(void *args)
 {
 
+<<<<<<< HEAD
     //convert argument to correct type
     struct timerArgs targs = *((struct timerArgs *)args);
+=======
+    //convert argument to correct type 
+    struct targs = *((struct timerArgs*) args);
+>>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
     struct timeval runtime = targs.runtime;
     struct timeval time;
     struct timeval start;
+    struct timeval diff;
     int secDiff, usecDiff;
 
     //gets start time and current time
@@ -181,15 +200,31 @@ void *threadTimer(void *args)
     //calculate the difference between start and current time
     secDiff = time.tv_sec - start.tv_sec;
     usecDiff = time.tv_sec - start.tv_sec;
+    diff.tv_sec = secDiff
+    diff.tv_usec = usecDiff
 
     //while seconds or useconds are less than runtime values, keep running
+<<<<<<< HEAD
     while (secDiff < runtime.tv_sec || usecDiff < runtime.tv_usec)
+=======
+    while(secDiff < runtime.tv_sec || usecDiff < runtime.tv_usec)
+>>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
     {
+        //TODO: MAKE P(RUN) ON INTERRUPT WORK BETTER
+        if (tv2double(diff) >= targs.cpuCycleTime)
+        {
+            if (checkForInterrupts(targs.interrupts) >= 0)
+            {
+                return elapsedCycles;
+            }
+        }
 
         //gets the current time and then updates secDiff and usecDiff
         gettimeofday(&time, NULL);
         secDiff = time.tv_sec - start.tv_sec;
         usecDiff = time.tv_usec - start.tv_usec;
+        diff.tv_sec = secDiff
+        diff.tv_usec = usecDiff
 
         //if usecDiff is negative, add USEC_PER_SEC to it and decrement secDiff
         if (usecDiff < 0)
