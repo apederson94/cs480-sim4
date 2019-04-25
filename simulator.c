@@ -157,20 +157,15 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                 {
                     controlBlock->pc->assocVal = controlBlock->pc->assocVal + elapsedCycles - settings->quantumTime;
                     elapsedCycles = settings->quantumTime;
-<<<<<<< HEAD
                 }
                 else if (strCmp(settings->cpuSched, "RR-P") && controlBlock->pc->commandLetter == 'P')
                 {
                     elapsedCycles += controlBlock->pc->assocVal;
-=======
->>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
                 }
-                else if (strCmp(settings->cpuSched, "RR-P")
-                && controlBlock->pc->commandLetter == 'P')
+                else if (strCmp(settings->cpuSched, "RR-P") && controlBlock->pc->commandLetter == 'P')
                 {
                     elapsedCycles += controlBlock->pc->assocVal;
                 }
-                
 
                 //creating time time values and setting timeval data
                 totalTime = controlBlock->pc->assocVal * cycleTime;
@@ -276,7 +271,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                         args[controlBlock->processNum].numApps = numApps;
                         args[controlBlock->processNum].quantum = settings->quantumTime;
 =======
-                        args[controlBlock->processNum].cpuCycleTime = (double) settings->cpuCycleTime;
+                        args[controlBlock->processNum].cpuCycleTime = (double)settings->cpuCycleTime;
 >>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
 
                         //runs app for amount of time stored in runtime struct

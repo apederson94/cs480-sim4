@@ -14,7 +14,6 @@ struct runForArgs
     int pid;
     double cpuCycleTime;
     int elapsedCycles;
-<<<<<<< HEAD
     int quantum;
     char *cpuSched;
     int numApps;
@@ -28,9 +27,6 @@ struct timerArgs
     int elapsedCycles;
     int quantum;
     int numApps;
-=======
-    char *cpuSched;
->>>>>>> b702d9cbce78e7e6f545ec4ef94b2432b4c07c70
 };
 
 struct timerArgs
@@ -42,7 +38,8 @@ struct timerArgs
 }
 
 //returns time of execution local to program
-struct timeval execTime(struct timeval start);
+struct timeval
+execTime(struct timeval start);
 
 //converts timeval to double
 double tv2double(struct timeval tv);
