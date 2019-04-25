@@ -67,6 +67,7 @@ void *runFor(void *arguments)
     targs[pid].numApps = args.numApps;
     targs[pid].quantum = args.quantum;
     targs[pid].interrupts = args.interrupts;
+    targs[pid].pid = pid;
 
     //pass in time to run for, and clock start time for program
     if (args.cmdLtr == 'P')
@@ -144,7 +145,7 @@ void *threadTimerRun(void *args)
 
         if (checkForInterrupt(targs.interrupts, targs.numApps) >= 0)
         {
-            printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ INTERRUPTED BY %d @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n", checkForInterrupt(targs.interrupts, targs.numApps));
+            printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ INTERRUPTED BY %d @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n", targs.pid);
             return (void *)cyclesRun;
         }
         //TODO: MAKE P(RUN) ON INTERRUPT WORK BETTER

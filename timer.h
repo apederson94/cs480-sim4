@@ -27,6 +27,7 @@ struct timerArgs
     int elapsedCycles;
     int quantum;
     int numApps;
+    int pid;
 };
 
 /* struct timerArgs
