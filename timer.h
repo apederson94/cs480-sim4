@@ -12,6 +12,21 @@ struct runForArgs
     double *interrupts;
     char cmdLtr;
     int pid;
+    double cpuCycleTime;
+    int elapsedCycles;
+    int quantum;
+    char *cpuSched;
+    int numApps;
+};
+
+struct timerArgs
+{
+    struct timeval runtime;
+    double *interrupts;
+    double cpuCycleTime;
+    int elapsedCycles;
+    int quantum;
+    int numApps;
 };
 
 //returns time of execution local to program
@@ -21,7 +36,10 @@ struct timeval execTime(struct timeval start);
 double tv2double(struct timeval tv);
 
 //creates a threaded timer
-void* threadTimer(void *args);
+void *threadTimer(void *args);
+
+//creates a threaded timer for a run command
+void *threadTimerRun(void *args);
 
 //runs a program for an amount of time
-void* runFor(void *args);
+void *runFor(void *args);

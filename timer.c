@@ -1,5 +1,7 @@
 #include "timer.h"
 #include "dataStructures.h"
+#include "interrupts.h"
+#include "booleans.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -19,7 +21,7 @@ struct timeval execTime(struct timeval start)
 
     //gets current time
     gettimeofday(&end, NULL);
-    
+
     //subtracts seconds and useconds
     secDiff = end.tv_sec - start.tv_sec;
     usecDiff = end.tv_usec - start.tv_usec;
@@ -27,7 +29,7 @@ struct timeval execTime(struct timeval start)
     //if the useconds are negative, add 1 second in USEC to usecDiff and decrement secDiff
     if (usecDiff < 0)
     {
-        usecDiff +=  USEC_PER_SEC;
+        usecDiff += USEC_PER_SEC;
         secDiff--;
     }
 
@@ -41,32 +43,56 @@ struct timeval execTime(struct timeval start)
 /*
     creates a pthread that runs a timer for timeval amount of time
 */
-void* runFor(void *arguments)
+void *runFor(void *arguments)
 {
-    pthread_t threadId; 
-    struct runForArgs args = *((struct runForArgs*) arguments);
+    pthread_t threadId;
+    struct runForArgs args = *((struct runForArgs *)arguments);
     int pid = args.pid;
+    void *cyclesRun;
     struct timeval runtime = args.runtime;
     struct timeval currTime;
     char cmdLtr = args.cmdLtr;
-    struct timeval timenow;
-    gettimeofday(&timenow, NULL);
-    double tiime = tv2double(timenow);
+    static struct timerArgs *targs;
+    static bool notSet = TRUE;
 
-    //pass in time to run for, and clock start time for program
-    pthread_create(&threadId, NULL, threadTimer, &runtime);
-
-    //wait for thread to return before deciding whether to cause an interrupt
-    pthread_join(threadId, NULL);
-
-    if (cmdLtr == 'I' || cmdLtr == 'O')
+    if (notSet)
     {
-        gettimeofday(&currTime, NULL);
-        args.interrupts[pid] = tv2double(currTime);
-        //args.pcbList[pid]->state = READY_STATE;
+        targs = (struct timerArgs *)calloc(args.numApps, sizeof(struct timerArgs));
+        notSet = FALSE;
     }
 
-    return NULL;
+    targs[pid].runtime = runtime;
+    targs[pid].cpuCycleTime = args.cpuCycleTime;
+    targs[pid].elapsedCycles = args.elapsedCycles;
+    targs[pid].numApps = args.numApps;
+    targs[pid].quantum = args.quantum;
+    targs[pid].interrupts = args.interrupts;
+
+    //pass in time to run for, and clock start time for program
+    if (args.cmdLtr == 'P')
+    {
+        pthread_create(&threadId, NULL, threadTimerRun, &targs[pid]);
+    }
+    else
+    {
+        pthread_create(&threadId, NULL, threadTimer, &targs[pid]);
+    }
+
+    //wait for thread to return before deciding whether to cause an interrupt
+    if (cmdLtr == 'P')
+    {
+        pthread_join(threadId, &cyclesRun);
+
+        return cyclesRun;
+    }
+    else
+    {
+        pthread_join(threadId, NULL);
+        gettimeofday(&currTime, NULL);
+        args.interrupts[pid] = tv2double(currTime);
+
+        return NULL;
+    }
 }
 
 /*
@@ -75,11 +101,75 @@ void* runFor(void *arguments)
         * checks difference between those times:
             * when time difference is equal to the runtime values, return
 */
-void* threadTimer(void *args)
+void *threadTimerRun(void *args)
 {
 
-    //convert argument to correct type 
-    struct timeval *runtime = (struct timeval*) args;
+    //convert argument to correct type
+    struct timerArgs targs = *((struct timerArgs *)args);
+    struct timeval time;
+    struct timeval start;
+    struct timeval diff;
+    int secDiff, usecDiff, cyclesRun;
+
+    cyclesRun = 0;
+
+    //gets start time and current time
+    gettimeofday(&start, NULL);
+    gettimeofday(&time, NULL);
+
+    //calculate the difference between start and current time
+    secDiff = time.tv_sec - start.tv_sec;
+    usecDiff = time.tv_sec - start.tv_sec;
+    diff.tv_sec = secDiff;
+    diff.tv_usec = usecDiff;
+
+    //while seconds or useconds are less than runtime values, keep running
+    while (cyclesRun + targs.elapsedCycles < targs.quantum)
+    {
+        while (tv2double(diff) < (targs.cpuCycleTime / MS_PER_SEC))
+        {
+            //gets the current time and then updates secDiff and usecDiff
+            gettimeofday(&time, NULL);
+            secDiff = time.tv_sec - start.tv_sec;
+            usecDiff = time.tv_usec - start.tv_usec;
+            diff.tv_sec = secDiff;
+            diff.tv_usec = usecDiff;
+
+            //if usecDiff is negative, add USEC_PER_SEC to it and decrement secDiff
+            if (usecDiff < 0)
+            {
+                usecDiff += USEC_PER_SEC;
+                secDiff--;
+            }
+        }
+        gettimeofday(&start, NULL);
+
+        diff.tv_sec = 0;
+        diff.tv_usec = 0;
+        cyclesRun += 1;
+
+        if (checkForInterrupt(targs.interrupts, targs.numApps))
+        {
+            break;
+        }
+        //TODO: MAKE P(RUN) ON INTERRUPT WORK BETTER
+    }
+
+    return (void *)cyclesRun;
+}
+
+/*
+    function for thread timer:
+        * gets times for start and current
+        * checks difference between those times:
+            * when time difference is equal to the runtime values, return
+*/
+void *threadTimer(void *args)
+{
+
+    //convert argument to correct type
+    struct timerArgs targs = *((struct timerArgs *)args);
+    struct timeval runtime = targs.runtime;
     struct timeval time;
     struct timeval start;
     int secDiff, usecDiff;
@@ -93,7 +183,7 @@ void* threadTimer(void *args)
     usecDiff = time.tv_sec - start.tv_sec;
 
     //while seconds or useconds are less than runtime values, keep running
-    while(secDiff < runtime->tv_sec || usecDiff < runtime->tv_usec)
+    while (secDiff < runtime.tv_sec || usecDiff < runtime.tv_usec)
     {
 
         //gets the current time and then updates secDiff and usecDiff
@@ -115,5 +205,5 @@ void* threadTimer(void *args)
 //converts a timeval to double and returns it
 double tv2double(struct timeval tv)
 {
-    return ((double)tv.tv_sec) + (((double)tv.tv_usec)/USEC_PER_SEC);
+    return ((double)tv.tv_sec) + (((double)tv.tv_usec) / USEC_PER_SEC);
 }
