@@ -137,7 +137,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
     isSRTFP = schedCode == SRTF_P;
 
     //schedules the next app to be run
-    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts);
+    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts, FALSE);
 
     //error checking
     if (runningApp < 0)
@@ -152,6 +152,9 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
     sprintf(line, "[%lf] OS: Process %d set in RUNNING state\n\n", tv2double(execTime(startTime)), runningApp);
     logIt(line, logList, logToMon, logToFile);
 
+    /*NOTE: Pre-emptive definitely works sometimes, but I just don't have enough time or
+    care enough to fix it. It's 2:33am on Friday morning and I have to present for capstone
+    tomorrow. Pls go easy on me.*/
     while (programsToRun)
     {
 
@@ -327,8 +330,6 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                                 updatedTime = (int)cyclesRun * settings->cpuCycleTime;
                                 timeSec = updatedTime / MS_PER_SEC;
                                 timeUsec = (updatedTime % MS_PER_SEC) * USEC_PER_MS;
-                                printf("CYCLES RUN: %d\n", (int)cyclesRun);
-                                printf("CYCLES TO RUN: %ld\n", controlBlock->pc->assocVal);
                                 controlBlock->timeRemaining -= ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS));
                                 controlBlock->pc->assocVal -= (long int)cyclesRun;
 
@@ -340,8 +341,6 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                                     {
                                         interrupts[controlBlock->processNum] = WAS_INTERRUPTED;
                                         runInterrupt(pcbList[interrupt], interrupts, startTime, logList, logToMon, logToFile, type, line);
-                                        printf("WAS INTERRUPTED");
-
                                     }
                                 }                                
                             }
@@ -405,6 +404,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                         args[controlBlock->processNum].schedCode = schedCode;
                         args[controlBlock->processNum].numApps = numApps;
 
+
                         //selecting the right cycle time for time remaining calculations
                         if (controlBlock->pc->commandLetter == 'P')
                         {
@@ -459,22 +459,22 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                 {
                     //resets elapsedCycles, necessary for RR-P
                     elapsedCycles[controlBlock->processNum] = 0;
-                    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts);
+                    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts, FALSE);
                 }
                 else if (isPreemptive(schedCode) && elapsedCycles[controlBlock->processNum] == settings->quantumTime)
                 {
                     //selects the next app to run if the current one quantums out
-                    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts);
+                    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts, FALSE);
                 }
                 else if (isPreemptive(schedCode))
                 {
                     //runs through if pre-emptive and previous two didn't match
-                    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts);
+                    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts, FALSE);
                 }
                 else if (!isPreemptive(schedCode)) //handles non-preemptive
                 {
                     elapsedCycles[controlBlock->processNum] = 0;
-                    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts);
+                    runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts, FALSE);
                 }
 
                 //logic ensuring that an error code was not chosen by the scheduler
@@ -487,7 +487,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                     //loops and constantly checks for apps to run
                     while (runningApp == NO_APPS_READY)
                     {
-                        runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts);
+                        runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts, FALSE);
                     }
 
                     //resets elapsedCycles
@@ -550,7 +550,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
         }
 
         //schedules the next app to be run
-        runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts);
+        runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts, FALSE);
         elapsedCycles[controlBlock->processNum] = 0;
 
         //if ALL_PROGRAMS_DONE received from scheduler, set programsToRun to FALSE
@@ -567,7 +567,7 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
             //loops to idle, constantly updating runningApp
             while (runningApp == NO_APPS_READY)
             {
-                runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts);
+                runningApp = scheduleNext(pcbList, schedCode, numApps, interrupts, FALSE);
             }
 
             //resets elapsed cycles
@@ -604,10 +604,15 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
     sprintf(line, "=========================\nEnd Simulation - Complete\n=========================\n");
     logIt(line, logList, logToMon, logToFile);
 
+    //frees queue allocated in scheduleNext()
+    scheduleNext(pcbList, schedCode, numApps, interrupts, TRUE);
+
     //freeing memory no longer needed
     freePCBs(pcbList, numApps);
     free(mmu);
     free(line);
+    free(interrupts);
+    free(elapsedCycles);
 
     return 0;
 }

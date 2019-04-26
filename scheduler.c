@@ -15,12 +15,18 @@
         * SRTF-P
         * RR-P
 */
-int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *interrupts)
+int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *interrupts, bool freeQueue)
 {
     int pcbIter, nextJob, interrupt;
     static int tmp;
     static int *queue;
     static int queueIter = 0;
+
+    if (freeQueue)
+    {
+        free(queue);
+        return 0;
+    }
 
     if (queueIter == 0)
     {
@@ -148,15 +154,6 @@ int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *
         {
             return interrupt;
         }
-
-        //logic for returning next in the rr list
-        /* figure out what to do if process is not ready yet...
-        ask michael tomorrow basically
-        wait for next avail or just keep looping and wait for the next one to be ready??
-        while (pcbList[next]->timeRemaining == 0)
-        {
-            
-        } */
 
         //iterates PCB array
         for (pcbIter = 0; pcbIter < numProcesses; pcbIter++)

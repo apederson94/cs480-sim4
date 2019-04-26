@@ -20,67 +20,67 @@ Simulator Start
 ===============
 
 [0.000000] OS: System Start
-[0.000006] OS: Creating Process Control Blocks
-[0.000013] OS: All processes initialized in NEW state
-[0.000019] OS: All processes now set to READY state
-[0.000024] OS: Selected process 0 with 8770ms remaining
-[0.000028] OS: Process 0 set in RUNNING state
+[0.001225] OS: Creating Process Control Blocks
+[0.010002] OS: All processes initialized in NEW state
+[0.011396] OS: All processes now set to READY state
+[0.013424] OS: Selected process 0 with 8770ms remaining
+[0.014519] OS: Process 0 set in RUNNING state
 
-[0.000033] Process: 0, keyboard input start
-[1.760242] Process: 0, keyboard input end
-[1.760284] Process: 0, printer output start
-[3.080503] Process: 0, printer output end
-[3.080539] Process: 0, run operation start
-[3.197720] Process: 0, run operation end
-[3.197760] Process: 0, keyboard input start
-[5.837939] Process: 0, keyboard input end
-[5.837970] Process: 0, keyboard input start
-[8.258125] Process: 0, keyboard input end
-[8.258154] Process: 0, run operation start
-[8.375345] Process: 0, run operation end
-[8.375398] Process: 0, hard drive input start
-[8.771550] Process: 0, hard drive input end
+[0.017738] Process: 0, keyboard input start
+[1.871263] Process: 0, keyboard input end
+[1.878600] Process: 0, printer output start
+[3.204083] Process: 0, printer output end
+[3.205144] Process: 0, run operation start
+[3.322883] Process: 0, run operation end
+[3.323039] Process: 0, keyboard input start
+[5.963458] Process: 0, keyboard input end
+[5.963612] Process: 0, keyboard input start
+[8.384004] Process: 0, keyboard input end
+[8.386779] Process: 0, run operation start
+[8.504282] Process: 0, run operation end
+[8.504423] Process: 0, hard drive input start
+[8.901240] Process: 0, hard drive input end
 
-[8.771585] OS: Process 0 ended and set in EXIT state
-[8.771592] OS: Selected process 1 with 4165ms remaining
-[8.771597] OS: Process 1 set in RUNNING state
+[8.903449] OS: Process 0 ended and set in EXIT state
+[8.905150] OS: Selected process 1 with 4165ms remaining
+[8.906141] OS: Process 1 set in RUNNING state
 
-[8.771606] Process: 1, printer output start
-[10.311811] Process: 1, printer output end
-[10.311845] Process: 1, run operation start
-[10.366018] Process: 1, run operation end
-[10.366049] Process: 1, printer output start
-[12.016257] Process: 1, printer output end
-[12.016291] Process: 1, run operation start
-[12.061504] Process: 1, run operation end
-[12.061538] Process: 1, printer output start
-[12.721778] Process: 1, printer output end
-[12.721830] Process: 1, run operation start
-[12.848045] Process: 1, run operation end
-[12.848079] Process: 1, run operation start
-[12.938208] Process: 1, run operation end
+[8.906993] Process: 1, printer output start
+[10.447475] Process: 1, printer output end
+[10.453036] Process: 1, run operation start
+[10.507537] Process: 1, run operation end
+[10.507700] Process: 1, printer output start
+[12.158174] Process: 1, printer output end
+[12.158362] Process: 1, run operation start
+[12.203846] Process: 1, run operation end
+[12.204033] Process: 1, printer output start
+[12.864523] Process: 1, printer output end
+[12.864692] Process: 1, run operation start
+[12.991204] Process: 1, run operation end
+[12.991347] Process: 1, run operation start
+[13.081989] Process: 1, run operation end
 
-[12.938236] OS: Process 1 ended and set in EXIT state
-[12.938246] OS: Selected process 2 with 7128ms remaining
-[12.938256] OS: Process 2 set in RUNNING state
+[13.082173] OS: Process 1 ended and set in EXIT state
+[13.082295] OS: Selected process 2 with 7128ms remaining
+[13.082411] OS: Process 2 set in RUNNING state
 
-[12.938263] Process: 2, hard drive input start
-[13.928458] Process: 2, hard drive input end
-[13.928508] Process: 2, keyboard input start
-[16.348683] Process: 2, keyboard input end
-[16.348718] Process: 2, run operation start
-[16.393830] Process: 2, run operation end
-[16.393854] Process: 2, keyboard input start
-[17.933955] Process: 2, keyboard input end
-[17.933996] Process: 2, keyboard input start
-[19.914198] Process: 2, keyboard input end
-[19.914229] Process: 2, run operation start
-[19.977412] Process: 2, run operation end
-[19.977448] Process: 2, run operation start
-[20.067608] Process: 2, run operation end
+[13.082506] Process: 2, hard drive input start
+[14.073011] Process: 2, hard drive input end
+[14.073162] Process: 2, keyboard input start
+[16.493588] Process: 2, keyboard input end
+[16.494108] Process: 2, run operation start
+[16.539599] Process: 2, run operation end
+[16.539765] Process: 2, keyboard input start
+[18.080209] Process: 2, keyboard input end
+[18.080377] Process: 2, keyboard input start
+[20.060807] Process: 2, keyboard input end
+[20.060954] Process: 2, run operation start
+[20.124382] Process: 2, run operation end
+[20.124548] Process: 2, run operation start
+[20.215016] Process: 2, run operation end
 
-[20.067660] OS: Process 2 ended and set in EXIT state
-[20.067672] OS: System end
+[20.215191] OS: Process 2 ended and set in EXIT state
+[20.216105] OS: System end
 
 =========================
 End Simulation - Complete

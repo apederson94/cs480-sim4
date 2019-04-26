@@ -12,7 +12,7 @@ enum
 };
 
 //returns the PID of the next process to be run
-int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *interrupts);
+int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *interrupts, bool freeQueue);
 
 //checks to see if all processes are done running
 int checkAllDone(struct PCB **pcbList, int numProcesses);

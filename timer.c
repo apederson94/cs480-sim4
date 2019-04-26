@@ -2,6 +2,7 @@
 #include "dataStructures.h"
 #include "interrupts.h"
 #include "booleans.h"
+#include "scheduler.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -51,7 +52,6 @@ void *runFor(void *arguments)
     void *cyclesRun;
     struct timeval runtime = args.runtime;
     struct timeval currTime;
-    char cmdLtr = args.cmdLtr;
     static struct timerArgs *targs;
     static bool notSet = TRUE;
 
@@ -75,7 +75,6 @@ void *runFor(void *arguments)
     {
         pthread_create(&threadId, NULL, threadTimerRun, &targs[pid]);
         pthread_join(threadId, &cyclesRun);
-
         return cyclesRun;
     }
     else

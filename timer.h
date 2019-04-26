@@ -1,5 +1,6 @@
 #include <sys/time.h>
 #include "dataStructures.h"
+#include "booleans.h"
 
 #define USEC_PER_SEC 1000000
 #define MS_PER_SEC 1000
