@@ -17,6 +17,7 @@ struct runForArgs
     int quantum;
     char *cpuSched;
     int numApps;
+    long int cyclesToRun;
 };
 
 struct timerArgs
@@ -28,6 +29,7 @@ struct timerArgs
     int quantum;
     int numApps;
     int pid;
+    long int cyclesToRun;
 };
 
 /* struct timerArgs

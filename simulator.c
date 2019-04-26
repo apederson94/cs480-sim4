@@ -38,6 +38,7 @@ void runInterrupt(struct PCB *block, double *interrupts, struct timeval startTim
 
     if (!wasInterrupted)
     {
+		printf("UH OH\n");
 		block->pc = block->pc->next;
         block->state = READY_STATE;
         sprintf(line, "[%lf] OS: Process %d set in READY state\n", tv2double(execTime(startTime)), block->processNum);
@@ -286,8 +287,11 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                 }
                 else //handles P, I, & O operations
                 {
-                    if (!interrupts[controlBlock->processNum])
+					printf("ASSOC VAL OUTSIDE: %d\n", controlBlock->pc->assocVal);
+					printf("INT OUTSIDE: %lf\n", interrupts[controlBlock->processNum]);
+                    if (!interrupts[controlBlock->processNum] || interrupts[controlBlock->processNum] == WAS_INTERRUPTED)
                     {
+						printf("ASSOC VAL: %d\n", controlBlock->pc->assocVal);
                         sprintf(line, "[%lf] Process: %d, %s %s start\n", tv2double(execTime(startTime)), controlBlock->processNum, controlBlock->pc->operationString, type);
                         logIt(line, logList, logToMon, logToFile);
 
@@ -300,23 +304,30 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                         args[controlBlock->processNum].numApps = numApps;
                         args[controlBlock->processNum].quantum = settings->quantumTime;
                         args[controlBlock->processNum].elapsedCycles = elapsedCycles[controlBlock->processNum];
+                        args[controlBlock->processNum].cyclesToRun = controlBlock->pc->assocVal;
 
                         //TODO: MOVE FORWARDS ON THE INTERRUPT PROGRAM COUNTER BECAUSE IT JUST INFINITE LOOPS CURRENTLY
+                        //TODO: FIX WHEN IT QUANTUMS OUT!!!
 
                         //runs app for amount of time stored in runtime struct
                         pthread_create(&threadIds[controlBlock->processNum], NULL, runFor, &args[controlBlock->processNum]);
 
                         if (controlBlock->pc->commandLetter == 'P')
                         {
+							printf("INSIDE HERE PLS: %d\n", controlBlock->pc->assocVal);
+							interrupts[controlBlock->processNum] = 0.0;
                             pthread_join(threadIds[controlBlock->processNum], &cyclesRun);
                             elapsedCycles[controlBlock->processNum] += (int)cyclesRun;
+                            printf("CYCLES RUN: %d\n", cyclesRun);
                             //printf("cycles run: %d, total: %d\n", cyclesRun, elapsedCycles[controlBlock->processNum]);
                             //TODO: figure out why sometimes the timeRemaining isn't updated after interrupted
                             updatedTime = (int)cyclesRun * settings->cpuCycleTime;
                             timeSec = updatedTime / MS_PER_SEC;
                             timeUsec = (updatedTime % MS_PER_SEC) * USEC_PER_MS;
                             controlBlock->timeRemaining -= ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS));
+                            controlBlock->pc->assocVal -= (long int)cyclesRun;
                             printf("TIME TO SUBTRACT: %d\n", ((timeSec * MS_PER_SEC) + (timeUsec / USEC_PER_MS)));
+							
 
                             //TODO: SOMETIMES THE INTERRUPT WILL HAPPEN RIGHT WHEN A PROCESS FINISHES ON THE CPU. FIX THIS SOMEHOW
                             interrupt = checkForInterrupt(interrupts, numApps);
@@ -327,11 +338,15 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                                     interrupts[controlBlock->processNum] = WAS_INTERRUPTED;
                                     runInterrupt(pcbList[interrupt], interrupts, startTime, logList, logToMon, logToFile, type, line);
                                 }
+                                else
+                                {
+									//interrupts[interrupt] == 0.0;
+								}
                             }
 
                             if (cyclesRun < controlBlock->pc->assocVal && checkForInterrupt(interrupts, numApps) >= 0)
                             {
-                                controlBlock->pc->assocVal -= (long int)cyclesRun;
+                                
                                 didFinishOnCPU = FALSE;
                             }
                             else
@@ -377,11 +392,16 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
                     
                 }
             }
-
+            
+            printf("STATE: %d, INT: %lf, DIDFINISHONCPU: %d\n", controlBlock->state, interrupts[controlBlock->processNum], didFinishOnCPU);
+			printf("GET IN: %d\n", controlBlock->state != WAITING_STATE && interrupts[controlBlock->processNum] != WAS_INTERRUPTED);
+			printf("PROCESS: %d\n", controlBlock->processNum);
             //iterates program counter
-            if (controlBlock->state != WAITING_STATE && didFinishOnCPU)
+            printf("ELAPSED CYCLES BEFORE ITERATING: %d\n", elapsedCycles[controlBlock->processNum]);
+            if (controlBlock->state != WAITING_STATE && interrupts[controlBlock->processNum] != WAS_INTERRUPTED && elapsedCycles[controlBlock->processNum] != settings->quantumTime)
             {
 				//TODO: THIS BLOCK IS ENTERED WHEN BLOCK WAS INTERRUPTED
+				printf("OH NOES!!");
                 controlBlock->pc = controlBlock->pc->next;
             }
 

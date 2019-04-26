@@ -54,6 +54,8 @@ void *runFor(void *arguments)
     char cmdLtr = args.cmdLtr;
     static struct timerArgs *targs;
     static bool notSet = TRUE;
+    
+    printf("RUN FOR CYCLES TO RUN: %d\n", args.cyclesToRun);
 
     if (notSet)
     {
@@ -68,6 +70,7 @@ void *runFor(void *arguments)
     targs[pid].quantum = args.quantum;
     targs[pid].interrupts = args.interrupts;
     targs[pid].pid = pid;
+    targs[pid].cyclesToRun = args.cyclesToRun;
 
     //pass in time to run for, and clock start time for program
     if (args.cmdLtr == 'P')
@@ -104,7 +107,10 @@ void *threadTimerRun(void *args)
     struct timeval start;
     struct timeval diff;
     int secDiff, usecDiff, cyclesRun;
-    int cyclesToRun = tv2double(targs.runtime) / (targs.cpuCycleTime / MS_PER_SEC);
+    int cyclesToRun = targs.cyclesToRun;
+    
+    printf("TARGS CYCLES TO RUN: %d\n", cyclesToRun);
+    printf("ELAPSED CYCLES: %d\n", targs.elapsedCycles);
 
     cyclesRun = 0;
 
