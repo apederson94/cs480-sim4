@@ -18,6 +18,7 @@ struct runForArgs
     char *cpuSched;
     int numApps;
     long int cyclesToRun;
+    int schedCode;
 };
 
 struct timerArgs
@@ -31,14 +32,6 @@ struct timerArgs
     int pid;
     long int cyclesToRun;
 };
-
-/* struct timerArgs
-{
-    struct timeval runtime;
-    double *interrupts;
-    double cpuCycleTime;
-    int elapsedCycles;
-} */
 
 //returns time of execution local to program
 struct timeval

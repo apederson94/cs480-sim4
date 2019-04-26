@@ -6,7 +6,7 @@ Memory Available (KB): 30000
 Processor Cycle Time (msec): 9
 File Path: metadata2.mdf
 I/O Cycle Time (msec): 22
-Log To: File
+Log To: Both
 Log File Path:     logfile_2.lgf
 End Simulator Configuration File.
 

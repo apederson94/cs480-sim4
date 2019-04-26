@@ -54,8 +54,6 @@ void *runFor(void *arguments)
     char cmdLtr = args.cmdLtr;
     static struct timerArgs *targs;
     static bool notSet = TRUE;
-    
-    printf("RUN FOR CYCLES TO RUN: %d\n", args.cyclesToRun);
 
     if (notSet)
     {
@@ -73,7 +71,7 @@ void *runFor(void *arguments)
     targs[pid].cyclesToRun = args.cyclesToRun;
 
     //pass in time to run for, and clock start time for program
-    if (args.cmdLtr == 'P')
+    if (args.cmdLtr == 'P' && isPreemptive(args.schedCode))
     {
         pthread_create(&threadId, NULL, threadTimerRun, &targs[pid]);
         pthread_join(threadId, &cyclesRun);
@@ -84,9 +82,11 @@ void *runFor(void *arguments)
     {
         pthread_create(&threadId, NULL, threadTimer, &targs[pid]);
         pthread_join(threadId, NULL);
-        gettimeofday(&currTime, NULL);
-        printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ INTERRUPT SENT %d @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n", pid);
-        args.interrupts[pid] = tv2double(currTime);
+        if (isPreemptive(args.schedCode))
+        {
+            gettimeofday(&currTime, NULL);
+            args.interrupts[pid] = tv2double(currTime);
+        }
 
         return NULL;
     }
@@ -108,9 +108,6 @@ void *threadTimerRun(void *args)
     struct timeval diff;
     int secDiff, usecDiff, cyclesRun;
     int cyclesToRun = targs.cyclesToRun;
-    
-    printf("TARGS CYCLES TO RUN: %d\n", cyclesToRun);
-    printf("ELAPSED CYCLES: %d\n", targs.elapsedCycles);
 
     cyclesRun = 0;
 
@@ -151,7 +148,6 @@ void *threadTimerRun(void *args)
 
         if (checkForInterrupt(targs.interrupts, targs.numApps) >= 0)
         {
-            printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ INTERRUPTED BY %d @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n", targs.pid);
             return (void *)cyclesRun;
         }
         //TODO: MAKE P(RUN) ON INTERRUPT WORK BETTER
@@ -184,8 +180,8 @@ void *threadTimer(void *args)
     secDiff = time.tv_sec - start.tv_sec;
     usecDiff = time.tv_sec - start.tv_sec;
 
-        //while seconds or useconds are less than runtime values, keep running
-        while (secDiff < runtime.tv_sec || usecDiff < runtime.tv_usec)
+    //while seconds or useconds are less than runtime values, keep running
+    while (secDiff < runtime.tv_sec || usecDiff < runtime.tv_usec)
     {
 
         //gets the current time and then updates secDiff and usecDiff
@@ -193,8 +189,8 @@ void *threadTimer(void *args)
         secDiff = time.tv_sec - start.tv_sec;
         usecDiff = time.tv_usec - start.tv_usec;
 
-            //if usecDiff is negative, add USEC_PER_SEC to it and decrement secDiff
-            if (usecDiff < 0)
+        //if usecDiff is negative, add USEC_PER_SEC to it and decrement secDiff
+        if (usecDiff < 0)
         {
             usecDiff += USEC_PER_SEC;
             secDiff--;

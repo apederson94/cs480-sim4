@@ -24,7 +24,7 @@ int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *
 
     if (queueIter == 0)
     {
-        queue = (int*) calloc(numProcesses, sizeof(int));
+        queue = (int *)calloc(numProcesses, sizeof(int));
         for (queueIter = 0; queueIter < numProcesses; queueIter++)
         {
             queue[queueIter] = queueIter;
@@ -42,9 +42,8 @@ int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *
         {
 
             //if time remaining isn't 0, select the first process in the array
-            if (pcbList[pcbIter]->timeRemaining != 0 
-            && (pcbList[pcbIter]-> state == READY_STATE || pcbList[pcbIter]-> state == RUNNING_STATE))
-            { 
+            if (pcbList[pcbIter]->timeRemaining != 0 && (pcbList[pcbIter]->state == READY_STATE || pcbList[pcbIter]->state == RUNNING_STATE))
+            {
                 nextJob = pcbList[pcbIter]->processNum;
                 return nextJob;
             }
@@ -62,8 +61,7 @@ int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *
             //if time remaining isn't 0, select the shortest job
             if (pcbList[pcbIter]->timeRemaining != 0)
             {
-                if (nextJob == NO_APPS_READY
-                && (pcbList[pcbIter]->state == READY_STATE || pcbList[pcbIter]->state == RUNNING_STATE))
+                if (nextJob == NO_APPS_READY && (pcbList[pcbIter]->state == READY_STATE || pcbList[pcbIter]->state == RUNNING_STATE))
                 {
                     nextJob = pcbIter;
                 }
@@ -97,9 +95,8 @@ int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *
         {
 
             //if time remaining isn't 0, select the first process in the array
-            if (pcbList[pcbIter]->timeRemaining != 0 
-            && (pcbList[pcbIter]-> state == READY_STATE || pcbList[pcbIter]-> state == RUNNING_STATE))
-            { 
+            if (pcbList[pcbIter]->timeRemaining != 0 && (pcbList[pcbIter]->state == READY_STATE || pcbList[pcbIter]->state == RUNNING_STATE))
+            {
                 nextJob = pcbList[pcbIter]->processNum;
                 return nextJob;
             }
@@ -149,7 +146,6 @@ int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *
         //error codes are less than zero so this will only ever return a process number
         if (interrupt >= 0)
         {
-            printf("HINT HINT %d, %lf\n", interrupt, interrupts[interrupt]);
             return interrupt;
         }
 
@@ -166,18 +162,17 @@ int scheduleNext(struct PCB **pcbList, int schedCode, int numProcesses, double *
         for (pcbIter = 0; pcbIter < numProcesses; pcbIter++)
         {
 
-            if (pcbList[queue[pcbIter]]->timeRemaining != 0
-            && (pcbList[queue[pcbIter]]->state == READY_STATE || pcbList[queue[pcbIter]]->state == RUNNING_STATE))
+            if (pcbList[queue[pcbIter]]->timeRemaining != 0 && (pcbList[queue[pcbIter]]->state == READY_STATE || pcbList[queue[pcbIter]]->state == RUNNING_STATE))
             {
                 nextJob = pcbList[queue[pcbIter]]->processNum;
-                
-                for (queueIter = pcbIter; queueIter < numProcesses-1; queueIter++)
+
+                for (queueIter = pcbIter; queueIter < numProcesses - 1; queueIter++)
                 {
                     tmp = queue[queueIter];
-                    queue[queueIter] = queue[queueIter+1];
-                    queue[queueIter+1] = tmp;
+                    queue[queueIter] = queue[queueIter + 1];
+                    queue[queueIter + 1] = tmp;
                 }
-                
+
                 return nextJob;
             }
         }
