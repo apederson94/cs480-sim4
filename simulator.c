@@ -32,14 +32,19 @@ void runInterrupt(struct PCB *block, double *interrupts, struct timeval startTim
         logIt(line, logList, logToMon, logToFile);
     }
 
-    if (!wasInterrupted)
+    if (!wasInterrupted && block->timeRemaining > 0)
     {
         block->pc = block->pc->next;
         block->state = READY_STATE;
         sprintf(line, "[%lf] OS: Process %d set in READY state\n", tv2double(execTime(startTime)), block->processNum);
         logIt(line, logList, logToMon, logToFile);
     }
-
+    else if (block->timeRemaining == 0)
+    {
+        block->state = EXIT_STATE;
+        sprintf(line, "[%lf] OS: Process %d ended and set in EXIT state\n", tv2double(execTime(startTime)), block->processNum);
+        logIt(line, logList, logToMon, logToFile);
+    }
     interrupts[block->processNum] = 0.0;
 }
 
@@ -487,7 +492,9 @@ int simulate(struct simAction *actionsList, struct configValues *settings, struc
         }
 
         //if timeRemaining is zero logic
-        if (controlBlock->timeRemaining == 0)
+        if (controlBlock->timeRemaining == 0 
+        && controlBlock->state != WAITING_STATE
+        && controlBlock->state != EXIT_STATE)
         {
 
             //sets state to exit for control block
