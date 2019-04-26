@@ -16,15 +16,19 @@ int checkForInterrupt(double *interrupts, int numApps)
     soonest = NO_INTERRUPTS;
     soonestTime = INFINITY;
 
+    //iterates over all PCBs
     for (intIter = 0; intIter < numApps; intIter++)
     {
+        //time to compare
         currTime = interrupts[intIter];
 
+        //checks to see if error code is present that this application was interrupted
         if (currTime == WAS_INTERRUPTED)
         {
             return intIter;
         }
 
+        //ensures time is not actually an error code and checks that it is earlier than current earliest
         if (currTime > 0.0 && currTime <= soonestTime)
         {
             soonest = intIter;
@@ -32,7 +36,6 @@ int checkForInterrupt(double *interrupts, int numApps)
         }
     }
 
+    //returns earliest interrupt's process ID
     return soonest;
 }
-
-//TODO: FIX ERROR WITH NEXT INSTRUCTION BEING EXECUTED AFTER INTERRUPT

@@ -3,8 +3,6 @@
 
 //DATA STRUCTURES AND THEIR RELATED FUNCTIONS
 
-//TODO: FREE_SETTINGS FUNCTION
-
 //HOLDS CONFIG FILE INFORMATION
 struct configValues
 {
@@ -40,6 +38,7 @@ struct PCB
     struct simAction *pc;
 };
 
+//state codes for PCB
 enum
 {
     NEW_STATE,
@@ -49,6 +48,7 @@ enum
     EXIT_STATE
 };
 
+//scheduler codes
 enum
 {
     FCFS_N,
